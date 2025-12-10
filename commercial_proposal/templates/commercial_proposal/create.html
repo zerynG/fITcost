@@ -1,0 +1,96 @@
+{% extends 'base_with_sidebar.html' %}
+{% load static %}
+
+{% block main_content %}
+<div class="container mt-4">
+    <h2>Создание коммерческого предложения</h2>
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="card mb-4">
+            <div class="card-header">Основная информация</div>
+            <div class="card-body">
+                {{ form.as_p }}
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">Услуги</div>
+            <div class="card-body">
+                {{ formset.management_form }}
+                <div id="services-formset">
+                    {% for form in formset %}
+                    <div class="service-form mb-3 p-3 border rounded">
+                        {{ form.as_p }}
+                    </div>
+                    {% endfor %}
+                </div>
+                <button type="button" class="btn btn-secondary" id="add-service">Добавить услугу</button>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addButton = document.getElementById('add-service');
+    const formset = document.getElementById('services-formset');
+    const totalForms = document.getElementById('id_services-TOTAL_FORMS');
+    let formCount = parseInt(totalForms.value);
+
+    // Функция для обработки бессрочного срока
+    function handleIndefiniteCheckbox() {
+        const checkboxes = document.querySelectorAll('input[name$="-is_indefinite"]');
+        checkboxes.forEach(checkbox => {
+            const formItem = checkbox.closest('.service-form');
+            const endDateField = formItem.querySelector('input[name$="-end_date"]');
+            if (endDateField) {
+                if (checkbox.checked) {
+                    endDateField.disabled = true;
+                    endDateField.value = '';
+                    endDateField.removeAttribute('required');
+                } else {
+                    endDateField.disabled = false;
+                }
+            }
+        });
+    }
+
+    // Обработка существующих чекбоксов
+    handleIndefiniteCheckbox();
+    
+    // Обработка изменения чекбоксов
+    document.addEventListener('change', function(e) {
+        if (e.target.name && e.target.name.endsWith('-is_indefinite')) {
+            handleIndefiniteCheckbox();
+        }
+    });
+
+    addButton.addEventListener('click', function() {
+        const firstForm = formset.querySelector('.service-form');
+        if (!firstForm) return;
+        
+        const newForm = firstForm.cloneNode(true);
+        newForm.innerHTML = newForm.innerHTML.replace(/services-\d+/g, `services-${formCount}`);
+        newForm.innerHTML = newForm.innerHTML.replace(/services\.\d+/g, `services.${formCount}`);
+        
+        // Очищаем значения в новом форме
+        const inputs = newForm.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            if (input.type !== 'checkbox' && input.type !== 'hidden') {
+                input.value = '';
+            } else if (input.type === 'checkbox') {
+                input.checked = false;
+            }
+        });
+        
+        formset.appendChild(newForm);
+        formCount++;
+        totalForms.value = formCount;
+        handleIndefiniteCheckbox();
+    });
+});
+</script>
+{% endblock main_content %}

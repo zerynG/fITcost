@@ -1,0 +1,301 @@
+{% extends 'base_with_sidebar.html' %}
+{% load static %}
+
+{% block main_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Просмотр проекта: {{ project.name }}</h2>
+                <div>
+                    <a href="{% url 'projects:project_edit' project.pk %}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Редактировать
+                    </a>
+                    <a href="{% url 'projects:project_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> К списку проектов
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Вкладки -->
+            <ul class="nav nav-tabs" id="projectTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="main-tab" data-toggle="tab" href="#main" role="tab">
+                        Основная информация
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="resources-tab" href="{% url 'projects:manage_resources' project.pk %}">
+                        Управление ресурсами
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="calculations-tab" data-toggle="tab" href="#calculations" role="tab">
+                        Расчеты
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="tab-content mt-3">
+                <!-- Основная информация (только просмотр) -->
+                <div class="tab-pane fade show active" id="main" role="tabpanel">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label><strong>Название проекта:</strong></label>
+                                        <p class="form-control-plaintext">{{ project.name }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label><strong>Заказчик:</strong></label>
+                                        <p class="form-control-plaintext">
+                                            {% if project.customer %}
+                                                {{ project.customer }}
+                                            {% else %}
+                                                <span class="text-muted">Не указан</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label><strong>Дата начала:</strong></label>
+                                        <p class="form-control-plaintext">{{ project.start_date|date:"d.m.Y" }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label><strong>Дата окончания:</strong></label>
+                                        <p class="form-control-plaintext">{{ project.end_date|date:"d.m.Y" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label><strong>Описание проекта:</strong></label>
+                                <p class="form-control-plaintext">
+                                    {% if project.description %}
+                                        {{ project.description|linebreaks }}
+                                    {% else %}
+                                        <span class="text-muted">Описание не указано</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label><strong>Техническое задание:</strong></label>
+                                        <p class="form-control-plaintext">
+                                            {% if project.technical_spec %}
+                                                <a href="{{ project.technical_spec.url }}" target="_blank">
+                                                    <i class="fas fa-file"></i> {{ project.technical_spec.name }}
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">Файл не загружен</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label><strong>Налоговая ставка:</strong></label>
+                                        <p class="form-control-plaintext">{{ project.tax_rate }}%</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label><strong>Расчет НМА:</strong></label>
+                                        <p class="form-control-plaintext">
+                                            {% if project.nma_cost %}
+                                                <a href="{% url 'admin:nmacost_nmacost_change' project.nma_cost.pk %}" target="_blank">
+                                                    {{ project.nma_cost }}
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">Не привязан</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label><strong>Коммерческое предложение:</strong></label>
+                                        <p class="form-control-plaintext">
+                                            {% if project.commercial_proposal %}
+                                                <a href="{% url 'admin:commercial_proposal_commercialproposal_change' project.commercial_proposal.pk %}" target="_blank">
+                                                    {{ project.commercial_proposal }}
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">Не привязано</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Управление ресурсами -->
+                <div class="tab-pane fade" id="resources" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4>Ресурсы проекта</h4>
+                        <a href="{% url 'projects:manage_resources' project.pk %}" class="btn btn-success">
+                            <i class="fas fa-cog"></i> Управление ресурсами
+                        </a>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>Название ресурса</th>
+                                    <th>Тип ресурса</th>
+                                    <th>Выбор исполнителя</th>
+                                    <th>Название услуги</th>
+                                    <th>Интервал</th>
+                                    <th>Себестоимость</th>
+                                    <th>Маржинальность</th>
+                                    <th>Итоговая стоимость</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for resource in resources %}
+                                <tr>
+                                    <td>{{ resource.name }}</td>
+                                    <td>{{ resource.get_resource_type_display }}</td>
+                                    <td>{{ resource.get_executor_display }}</td>
+                                    <td>{{ resource.service_name }}</td>
+                                    <td>
+                                        <small>
+                                            {{ resource.start_date|date:"d.m.Y" }} - {{ resource.end_date|date:"d.m.Y" }}
+                                        </small>
+                                    </td>
+                                    <td>{{ resource.cost_price|floatformat:2 }} руб.</td>
+                                    <td>
+                                        {% if request.user.is_staff or request.user.is_superuser %}
+                                            {{ resource.margin }}%
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>{{ resource.final_cost|floatformat:2 }} руб.</strong></td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">
+                                        <p class="mt-3">Ресурсы не добавлены</p>
+                                        <a href="{% url 'projects:manage_resources' project.pk %}" class="btn btn-success">
+                                            Добавить ресурсы
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Расчеты -->
+                <div class="tab-pane fade" id="calculations" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Финансовые показатели</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table">
+                                        <tr>
+                                            <th>Себестоимость проекта:</th>
+                                            <td>{{ project.cost_price|floatformat:2 }} руб.</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Стоимость с маржинальностью:</th>
+                                            <td>{{ project.cost_with_margin|floatformat:2 }} руб.</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Чистая прибыль:</th>
+                                            <td>{{ project.net_profit|floatformat:2 }} руб.</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Налоговая ставка:</th>
+                                            <td>{{ project.tax_rate }}%</td>
+                                        </tr>
+                                        <tr class="table-primary">
+                                            <th><strong>Итоговая стоимость проекта:</strong></th>
+                                            <td><strong>{{ project.total_cost|floatformat:2 }} руб.</strong></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Документы</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        {% if project.nma_cost %}
+                                            <a href="{% url 'admin:nmacost_nmacost_change' project.nma_cost.pk %}" 
+                                               class="btn btn-outline-primary" target="_blank">
+                                                <i class="fas fa-file-alt"></i> Редактировать расчет НМА
+                                            </a>
+                                            <p class="mt-2 mb-0">
+                                                <small class="text-muted">Стоимость НМА: {{ project.nma_cost.total_cost|floatformat:2 }} руб.</small>
+                                            </p>
+                                        {% else %}
+                                            <a href="{% url 'admin:nmacost_nmacost_add' %}?project_name={{ project.name }}" 
+                                               class="btn btn-outline-primary" target="_blank">
+                                                <i class="fas fa-plus"></i> Формирование расчета НМА
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                    {% if project.customer %}
+                                        <div>
+                                            {% if project.commercial_proposal %}
+                                                <a href="{% url 'admin:commercial_proposal_commercialproposal_change' project.commercial_proposal.pk %}" 
+                                                   class="btn btn-outline-success" target="_blank">
+                                                    <i class="fas fa-file-contract"></i> Редактировать коммерческое предложение
+                                                </a>
+                                                <p class="mt-2 mb-0">
+                                                    <small class="text-muted">Стоимость КП: {{ project.commercial_proposal.total_cost|floatformat:2 }} руб.</small>
+                                                </p>
+                                            {% else %}
+                                                <a href="{% url 'admin:commercial_proposal_commercialproposal_add' %}?customer={{ project.customer.pk }}" 
+                                                   class="btn btn-outline-success" target="_blank">
+                                                    <i class="fas fa-plus"></i> Формирование коммерческого предложения
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    {% else %}
+                                        <div class="alert alert-info">
+                                            <small>Для формирования коммерческого предложения необходимо выбрать заказчика</small>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock main_content %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

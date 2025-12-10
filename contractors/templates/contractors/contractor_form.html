@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>{% if form.instance.pk %}Редактирование{% else %}Добавление{% endif %} исполнителя</h1>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form.as_p }}
+        </div>
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a href="{% url 'contractors:contractors_list' %}" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const contractTypeSelect = document.getElementById('id_contract_type');
+    const taxRateField = document.getElementById('id_tax_rate');
+    const form = document.querySelector('form');
+    
+    function updateTaxRateField() {
+        if (contractTypeSelect.value === 'NPD') {
+            taxRateField.value = '0';
+            taxRateField.disabled = true;
+            taxRateField.removeAttribute('required');
+        } else {
+            taxRateField.disabled = false;
+            taxRateField.setAttribute('required', 'required');
+        }
+    }
+    
+    // Обработка отправки формы - убеждаемся, что для NPD значение установлено
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (contractTypeSelect.value === 'NPD') {
+                taxRateField.value = '0';
+                taxRateField.disabled = false; // Временно включаем для отправки
+            }
+        });
+    }
+    
+    contractTypeSelect.addEventListener('change', updateTaxRateField);
+    updateTaxRateField(); // Initial call
+});
+</script>
+{% endblock %}

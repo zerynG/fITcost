@@ -1,0 +1,161 @@
+{% load static %}
+<!-- Боковая панель навигации -->
+<div class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+    <div class="position-sticky pt-3">
+        <div class="sidebar-logo text-center mb-4">
+            <h6 class="text-muted">IQNIX DEV</h6>
+        </div>
+
+        <ul class="nav flex-column">
+            <li class="nav-item mb-3">
+                <button id="theme-toggle-btn" class="nav-link w-100 text-start" type="button" style="border: none; background: none; cursor: pointer; padding: 0.75rem 1rem;">
+                    <i class="fas fa-moon me-2"></i>
+                    <span id="theme-toggle-text">Темная тема</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == '/home/' %}active{% endif %}" href="/home/">
+                    <i class="fas fa-home me-2"></i>
+                    Главная
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'workspace' in request.path and 'project' not in request.path %}active{% endif %}" href="{% url 'workspace:workspace_list' %}">
+                    <i class="fas fa-briefcase me-2"></i>
+                    Рабочие области
+                </a>
+            </li>
+            
+            {% comment %} Реестры показываем только внутри проекта {% endcomment %}
+            {% if workspace_id and project_id %}
+                <li class="nav-item mt-3">
+                    <hr>
+                    <small class="text-muted px-3">Реестры проекта</small>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'customers' in request.path %}active{% endif %}" href="{% url 'customers:customer_list_project' workspace_id project_id %}">
+                        <i class="fas fa-users me-2"></i>
+                        Реестр заказчиков
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'contractors' in request.path %}active{% endif %}" href="{% url 'contractors:contractors_list_project' workspace_id project_id %}">
+                        <i class="fas fa-user-tie me-2"></i>
+                        Реестр исполнителей
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'equipment' in request.path %}active{% endif %}" href="{% url 'equipment:list_project' workspace_id project_id %}">
+                        <i class="fas fa-tools me-2"></i>
+                        Реестр оборудования
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'employees' in request.path %}active{% endif %}" href="{% url 'employees:employee_list_project' workspace_id project_id %}">
+                        <i class="fas fa-id-badge me-2"></i>
+                        Реестр сотрудников
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'subcontractors' in request.path %}active{% endif %}" href="{% url 'subcontractors:list_project' workspace_id project_id %}">
+                        <i class="fas fa-building me-2"></i>
+                        Реестр субподрядчиков
+                    </a>
+                </li>
+                <li class="nav-item mt-3">
+                    <hr>
+                    <small class="text-muted px-3">Инструменты проекта</small>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'projects' in request.path and '/projects/' in request.path %}active{% endif %}" href="{% url 'projects:manage_resources' project_id %}">
+                        <i class="fas fa-project-diagram me-2"></i>
+                        Управление проектом
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if '/commercial/' in request.path %}active{% endif %}" href="{% url 'commercial_proposal:proposal_list_project' workspace_id project_id %}">
+                        <i class="fas fa-file-contract me-2"></i>
+                        Форма коммерческого предложения
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if '/nma/' in request.path %}active{% endif %}" href="{% url 'nmacost:nmacost-list-project' workspace_id project_id %}">
+                        <i class="fas fa-calculator me-2"></i>
+                        Форма стоимости НМА
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'itcost' in request.path %}active{% endif %}" href="{% url 'itcost:dashboard' %}">
+                        <i class="fas fa-calculator me-2"></i>
+                        Система расчета стоимости
+                    </a>
+                </li>
+            {% endif %}
+            
+            <li class="nav-item mt-3">
+                <hr>
+                <small class="text-muted px-3">Система</small>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'user_management' in request.path %}active{% endif %}" href="/staff/users/">
+                    <i class="fas fa-user-plus me-2"></i>
+                    Создание пользователей
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<style>
+    .sidebar {
+        min-height: calc(100vh - 56px);
+        box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+    }
+
+    .nav-link {
+        color: #333;
+        padding: 0.75rem 1rem;
+        border-left: 3px solid transparent;
+        transition: all 0.2s;
+    }
+
+    .nav-link:hover {
+        background-color: #f8f9fa;
+        border-left: 3px solid #0d6efd;
+        color: #0d6efd;
+    }
+
+    .nav-link.active {
+        font-weight: 600;
+        color: #0d6efd;
+        background-color: #e9ecef;
+        border-left: 3px solid #0d6efd;
+    }
+
+    .sidebar-logo {
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 1rem;
+    }
+
+    .nav-item {
+        margin-bottom: 0.25rem;
+    }
+
+    .nav-link i {
+        width: 20px;
+        text-align: center;
+    }
+
+    #theme-toggle-btn {
+        transition: all 0.2s;
+    }
+
+    #theme-toggle-btn:hover {
+        background-color: #f8f9fa !important;
+    }
+
+    [data-theme="dark"] #theme-toggle-btn:hover {
+        background-color: #3a3a3a !important;
+    }
+</style>
+

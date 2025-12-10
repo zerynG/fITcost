@@ -1,0 +1,28 @@
+{% extends 'base_with_sidebar.html' %}
+
+{% block main_content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4>Удаление рабочей области</h4>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Вы уверены, что хотите удалить рабочую область "{{ workspace.name }}"?</p>
+                    <p class="text-muted">Все проекты и данные в этой рабочей области будут скрыты, но не удалены полностью.</p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'workspace:workspace_dashboard' workspace.id %}" class="btn btn-secondary">Отмена</a>
+                            <button type="submit" class="btn btn-danger">Удалить рабочую область</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

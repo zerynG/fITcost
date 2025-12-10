@@ -1,0 +1,142 @@
+{% extends "itcost/base_with_sidebar.html" %}
+
+{% block title %}Дашборд расчета стоимости{% endblock %}
+
+{% block main_content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3">Система расчета стоимости IT-проекта</h1>
+            <p class="text-muted mb-0">Контролируйте ключевые показатели стоимости разработки, НМА и коммерческих предложений.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a class="btn btn-primary" href="{% url 'itcost:calculation_create' %}">
+                <i class="fa-solid fa-plus me-2"></i>Новый расчет
+            </a>
+            <a class="btn btn-outline-secondary" href="{% url 'itcost:settings' %}">
+                <i class="fa-solid fa-gear me-2"></i>Настройки
+            </a>
+            <a class="btn btn-outline-info" href="{% url 'itcost:roles' %}">
+                <i class="fa-solid fa-users me-2"></i>Роли
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Всего проектов</p>
+                    <h3 class="fw-bold">{{ metrics.projects_count }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Стоимость разработки</p>
+                    <h3 class="fw-bold">{{ metrics.development_total|floatformat:2 }} ₽</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Стоимость НМА</p>
+                    <h3 class="fw-bold">{{ metrics.intangible_total|floatformat:2 }} ₽</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Коммерческие предложения</p>
+                    <h3 class="fw-bold">{{ metrics.commercial_total|floatformat:2 }} ₽</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-transparent border-bottom-0">
+                    <h5 class="mb-0">Последние расчеты</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Проект</th>
+                                <th>Заказчик</th>
+                                <th>Разработка</th>
+                                <th>НМА</th>
+                                <th>Коммерческое</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for calc in calculations %}
+                            <tr>
+                                <td>
+                                    <div class="fw-semibold">{{ calc.project_name }}</div>
+                                    <small class="text-muted">обновлено {{ calc.updated_at|date:"d.m.Y H:i" }}</small>
+                                </td>
+                                <td>{{ calc.client_name|default:"—" }}</td>
+                                <td>{{ calc.development_cost|floatformat:2 }} ₽</td>
+                                <td>{{ calc.intangible_asset_cost|floatformat:2 }} ₽</td>
+                                <td>{{ calc.commercial_offer_cost|floatformat:2 }} ₽</td>
+                                <td class="text-end">
+                                    <a href="{% url 'itcost:calculation_detail' calc.pk %}" class="btn btn-sm btn-outline-primary">Подробнее</a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">Пока нет расчетов. Создайте первый, чтобы увидеть аналитику.</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-transparent border-bottom-0">
+                    <h5 class="mb-0">Настройки компании</h5>
+                </div>
+                <div class="card-body">
+                    {% if organization_settings %}
+                        <p class="mb-1"><strong>{{ organization_settings.company_name|default:"Название не указано" }}</strong></p>
+                        <p class="mb-1 text-muted">{{ organization_settings.director_full_name|default:"Руководитель не указан" }}</p>
+                        <p class="mb-1">{{ organization_settings.director_position|default:"Должность не указана" }}</p>
+                        <p class="mb-0">
+                            <i class="fa-solid fa-phone me-2"></i>{{ organization_settings.contact_phone|default:"—" }}<br>
+                            <i class="fa-solid fa-envelope me-2"></i>{{ organization_settings.contact_email|default:"—" }}
+                        </p>
+                    {% else %}
+                        <p class="text-muted mb-0">Настройки еще не заполнены.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-transparent border-bottom-0">
+                    <h5 class="mb-0">Ролевой состав</h5>
+                </div>
+                <div class="card-body">
+                    {% for item in role_breakdown %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>{{ item.label }}</span>
+                            <span class="badge bg-primary rounded-pill">{{ item.total }}</span>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted mb-0">Роли еще не назначены.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock main_content %}
+

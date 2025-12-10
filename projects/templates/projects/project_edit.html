@@ -1,0 +1,175 @@
+{% extends 'base_with_sidebar.html' %}
+{% load static %}
+
+{% block main_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Редактирование проекта: {{ project.name }}</h2>
+                <div>
+                    <a href="{% url 'projects:project_detail' project.pk %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> К просмотру проекта
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Вкладки -->
+            <ul class="nav nav-tabs" id="projectTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="main-tab" data-toggle="tab" href="#main" role="tab">
+                        Основная информация
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="resources-tab" href="{% url 'projects:manage_resources' project.pk %}">
+                        Управление ресурсами
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="tab-content mt-3">
+                <!-- Основная информация -->
+                <div class="tab-pane fade show active" id="main" role="tabpanel">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Основная информация</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>{{ form.name.label }} <span class="text-danger">*</span></label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                        <div class="text-danger">{{ form.name.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>{{ form.customer.label }}</label>
+                                    {{ form.customer }}
+                                    {% if form.customer.errors %}
+                                        <div class="text-danger">{{ form.customer.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>{{ form.start_date.label }} <span class="text-danger">*</span></label>
+                                    {{ form.start_date }}
+                                    {% if form.start_date.errors %}
+                                        <div class="text-danger">{{ form.start_date.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>{{ form.end_date.label }} <span class="text-danger">*</span></label>
+                                    {{ form.end_date }}
+                                    {% if form.end_date.errors %}
+                                        <div class="text-danger">{{ form.end_date.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>{{ form.description.label }}</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="text-danger">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>{{ form.technical_spec.label }}</label>
+                                    {{ form.technical_spec }}
+                                    {% if project.technical_spec %}
+                                        <small class="form-text text-muted">
+                                            Текущий файл: <a href="{{ project.technical_spec.url }}" target="_blank">{{ project.technical_spec.name }}</a>
+                                        </small>
+                                    {% endif %}
+                                    {% if form.technical_spec.errors %}
+                                        <div class="text-danger">{{ form.technical_spec.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>{{ form.tax_rate.label }} <span class="text-danger">*</span></label>
+                                    {{ form.tax_rate }}
+                                    {% if form.tax_rate.errors %}
+                                        <div class="text-danger">{{ form.tax_rate.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>{{ form.nma_cost.label }}</label>
+                                    {{ form.nma_cost }}
+                                    <small class="form-text text-muted">
+                                        <a href="{% url 'admin:nmacost_nmacost_add' %}" target="_blank">Создать новый расчет НМА</a>
+                                    </small>
+                                    {% if form.nma_cost.errors %}
+                                        <div class="text-danger">{{ form.nma_cost.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>{{ form.commercial_proposal.label }}</label>
+                                    {{ form.commercial_proposal }}
+                                    <small class="form-text text-muted">
+                                        <a href="{% url 'admin:commercial_proposal_commercialproposal_add' %}" target="_blank">Создать новое коммерческое предложение</a>
+                                    </small>
+                                    {% if form.commercial_proposal.errors %}
+                                        <div class="text-danger">{{ form.commercial_proposal.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group mt-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Сохранить изменения
+                    </button>
+                    <a href="{% url 'projects:project_detail' project.pk %}" class="btn btn-secondary">
+                        Отмена
+                    </a>
+                </div>
+            </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock main_content %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Динамическое обновление расчетов при изменении налоговой ставки
+    $('#id_tax_rate').change(function() {
+        // Можно добавить AJAX запрос для пересчета, если нужно
+    });
+});
+</script>
+{% endblock %}
+

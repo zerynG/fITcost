@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Включаем боковую панель -->
+        {% include 'includes/sidebar.html' %}
+
+        <!-- Основное содержимое -->
+        <div class="col-md-9 col-lg-10 ms-sm-auto px-4 py-4">
+            {% block main_content %}
+            <!-- Здесь будет основное содержимое страницы -->
+            {% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}

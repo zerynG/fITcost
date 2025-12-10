@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Добавить ресурс для проекта: {% if nmacost.project %}{{ nmacost.project.name }}{% else %}Без проекта{% endif %}</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="card">
+            <div class="card-body">
+                <div class="form-group">
+                    {{ form.as_p }}
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary">Добавить</button>
+            <a href="{% url 'nmacost:nmacost-detail' nmacost.id %}" class="btn btn-secondary">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

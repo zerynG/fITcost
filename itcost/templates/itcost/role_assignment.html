@@ -1,0 +1,65 @@
+{% extends "itcost/base_with_sidebar.html" %}
+
+{% block title %}Назначение ролей{% endblock %}
+
+{% block main_content %}
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-transparent border-bottom-0">
+                    <h5 class="mb-0">Назначить роль</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label class="form-label">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+                                {{ field }}
+                                {% for error in field.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-primary">Назначить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-transparent border-bottom-0">
+                    <h5 class="mb-0">Текущие назначения</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Пользователь</th>
+                                <th>Роль</th>
+                                <th>Назначил</th>
+                                <th>Дата</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for assignment in assignments %}
+                                <tr>
+                                    <td>{{ assignment.user }}</td>
+                                    <td>{{ assignment.get_role_display }}</td>
+                                    <td>{{ assignment.assigned_by|default:"—" }}</td>
+                                    <td>{{ assignment.assigned_at|date:"d.m.Y H:i" }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">Роли еще не назначены</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock main_content %}
+

@@ -1,0 +1,16 @@
+{% extends 'base_with_sidebar.html' %}
+
+{% block main_content %}
+<div class="container mt-4">
+    <h2>Удаление коммерческого предложения</h2>
+    <p>Вы уверены, что хотите удалить коммерческое предложение <strong>"{{ proposal.title }}"</strong> для заказчика <strong>{{ proposal.customer.name }}</strong>?</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Удалить</button>
+        <a href="{% url 'commercial_proposal:proposal_detail' proposal.pk %}" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>
+{% endblock %}
+
+

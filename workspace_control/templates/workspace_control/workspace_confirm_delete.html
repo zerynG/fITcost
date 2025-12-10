@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-danger">Удаление рабочей области</h3>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Вы уверены, что хотите удалить рабочую область?</p>
+
+                    <div class="alert alert-warning">
+                        <strong>Название:</strong> {{ workspace.name }}<br>
+                        <strong>Поддомен:</strong> {{ workspace.subdomain }}<br>
+                        <strong>Администратор:</strong> {{ workspace.admin.get_full_name|default:workspace.admin.username }}<br>
+                        <strong>Участников:</strong> {{ workspace.control_members.count }}
+                    </div>
+
+                    <p class="text-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Внимание! Это действие нельзя отменить. Все данные рабочей области будут удалены.
+                    </p>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Удалить
+                            </button>
+                            <a href="{% url 'workspace_control:workspace_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

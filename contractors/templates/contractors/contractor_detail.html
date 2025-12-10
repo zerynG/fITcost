@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Исполнитель: {{ contractor }}</h1>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Основная информация</h5>
+            <p><strong>ФИО:</strong> {{ contractor.last_name }} {{ contractor.first_name }} {{ contractor.middle_name|default:'' }}</p>
+            <p><strong>Тип оформления:</strong> {{ contractor.get_contract_type_display }}</p>
+            <p><strong>Налоговая ставка:</strong> {{ contractor.tax_rate }}%</p>
+            {% if contractor.default_unit %}
+            <p><strong>Единица измерения по умолчанию:</strong> {{ contractor.get_default_unit_display }}</p>
+            <p><strong>Стоимость по умолчанию:</strong> {{ contractor.default_rate }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <h3>Услуги исполнителя</h3>
+    
+    <div class="card mb-4">
+        <div class="card-header">Добавить услугу</div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ service_form.as_p }}
+                <button type="submit" class="btn btn-success">Добавить услугу</button>
+            </form>
+        </div>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Услуга</th>
+                <th>Единица измерения</th>
+                <th>Стоимость</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for service in services %}
+            <tr>
+                <td>{{ service.name }}</td>
+                <td>{{ service.get_unit_display }}</td>
+                <td>{{ service.rate }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" class="text-center">Услуги не добавлены</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{% url 'contractors:contractors_list' %}" class="btn btn-secondary">Назад к списку</a>
+</div>
+{% endblock %}

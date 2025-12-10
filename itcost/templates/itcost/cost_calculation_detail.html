@@ -1,0 +1,113 @@
+{% extends "itcost/base_with_sidebar.html" %}
+
+{% block title %}Расчет: {{ calculation.project_name }}{% endblock %}
+
+{% block main_content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">{{ calculation.project_name }}</h1>
+        <div class="d-flex gap-2">
+            <a href="{% url 'itcost:calculation_edit' calculation.pk %}" class="btn btn-primary">Редактировать</a>
+            <a href="{% url 'itcost:calculation_delete' calculation.pk %}" class="btn btn-danger">Удалить</a>
+            <a href="{% url 'itcost:dashboard' %}" class="btn btn-secondary">Назад</a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-transparent border-bottom-0">
+                    <h5 class="mb-0">Основная информация</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Заказчик:</strong> {{ calculation.client_name|default:"—" }}</p>
+                    <p><strong>Описание/ТЗ:</strong> {{ calculation.project_brief|default:"—" }}</p>
+                    <p><strong>Создано:</strong> {{ calculation.created_at|date:"d.m.Y H:i" }}</p>
+                    <p><strong>Обновлено:</strong> {{ calculation.updated_at|date:"d.m.Y H:i" }}</p>
+                    {% if calculation.created_by %}
+                        <p><strong>Инициатор:</strong> {{ calculation.created_by }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-transparent border-bottom-0">
+                    <h5 class="mb-0">Расчет компонентов</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <td>Базовая трудоемкость</td>
+                            <td class="text-end">{{ components.base_labor|floatformat:2 }} ₽</td>
+                        </tr>
+                        <tr>
+                            <td>Управленческие расходы ({{ calculation.management_overhead_percent }}%)</td>
+                            <td class="text-end">{{ components.management_overhead|floatformat:2 }} ₽</td>
+                        </tr>
+                        <tr>
+                            <td>Резерв на риски ({{ calculation.risk_percent }}%)</td>
+                            <td class="text-end">{{ components.risk_reserve|floatformat:2 }} ₽</td>
+                        </tr>
+                        <tr>
+                            <td>Маржа прибыли ({{ calculation.profit_margin_percent }}%)</td>
+                            <td class="text-end">{{ components.profit_margin|floatformat:2 }} ₽</td>
+                        </tr>
+                        <tr>
+                            <td>Инфраструктурные затраты</td>
+                            <td class="text-end">{{ calculation.infrastructure_cost|floatformat:2 }} ₽</td>
+                        </tr>
+                        <tr>
+                            <td>Прочие расходы</td>
+                            <td class="text-end">{{ calculation.other_expenses|floatformat:2 }} ₽</td>
+                        </tr>
+                        <tr class="table-primary">
+                            <td><strong>Стоимость разработки проекта</strong></td>
+                            <td class="text-end"><strong>{{ calculation.development_cost|floatformat:2 }} ₽</strong></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-transparent border-bottom-0">
+                    <h5 class="mb-0">Ключевые показатели</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <p class="text-muted mb-1">Стоимость разработки проекта</p>
+                        <h4 class="fw-bold">{{ calculation.development_cost|floatformat:2 }} ₽</h4>
+                    </div>
+                    <div class="mb-3">
+                        <p class="text-muted mb-1">Стоимость нематериального актива</p>
+                        <h4 class="fw-bold">{{ calculation.intangible_asset_cost|floatformat:2 }} ₽</h4>
+                        {% if calculation.nma_cost %}
+                            <small class="text-muted">(из формы НМА: {{ calculation.nma_cost }})</small>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1">Стоимость коммерческого предложения</p>
+                        <h4 class="fw-bold">{{ calculation.commercial_offer_cost|floatformat:2 }} ₽</h4>
+                        {% if calculation.commercial_proposal %}
+                            <small class="text-muted">(из коммерческого предложения: {{ calculation.commercial_proposal }})</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-transparent border-bottom-0">
+                    <h5 class="mb-0">Параметры</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Трудоемкость:</strong> {{ calculation.estimated_hours }} ч</p>
+                    <p><strong>Ставка:</strong> {{ calculation.hourly_rate }} ₽/ч</p>
+                    <p><strong>Доля капитализации НМА:</strong> {{ calculation.asset_capitalization_percent }}%</p>
+                    <p><strong>Наценка коммерческого предложения:</strong> {{ calculation.commercial_markup_percent }}%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock main_content %}
+

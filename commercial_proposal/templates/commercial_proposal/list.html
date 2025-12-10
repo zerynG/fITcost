@@ -1,0 +1,74 @@
+{% extends 'base_with_sidebar.html' %}
+{% load static %}
+
+{% block main_content %}
+<div class="container mt-4">
+    <!-- Кнопка Назад -->
+    <div class="row mb-3">
+        <div class="col-md-12">
+            {% if project_id %}
+                <a href="{% url 'workspace:project_detail' workspace_id project_id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Назад к проекту
+                </a>
+            {% else %}
+                <a href="/home/" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Коммерческие предложения{% if project %} ({{ project.name }}){% endif %}</h2>
+        {% if project_id %}
+            <a href="{% url 'commercial_proposal:create_project' workspace_id project_id %}" class="btn btn-primary">Создать новое</a>
+        {% else %}
+            <a href="{% url 'commercial_proposal:create_proposal' %}" class="btn btn-primary">Создать новое</a>
+        {% endif %}
+    </div>
+    
+    {% if proposals %}
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Название</th>
+                    <th>Заказчик</th>
+                    <th>Дата</th>
+                    <th>Стоимость</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for proposal in proposals %}
+                <tr>
+                    <td>{{ proposal.title }}</td>
+                    <td>{{ proposal.customer.name }}</td>
+                    <td>{{ proposal.creation_date }}</td>
+                    <td>{{ proposal.total_cost }} руб.</td>
+                    <td>
+                        <a href="{% url 'commercial_proposal:proposal_detail' proposal.pk %}" class="btn btn-sm btn-info">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="{% url 'commercial_proposal:download_pdf' proposal.pk %}" class="btn btn-sm btn-danger">PDF</a>
+                        <a href="{% url 'commercial_proposal:delete_proposal' proposal.pk %}" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        Нет созданных коммерческих предложений. 
+        {% if project_id %}
+            <a href="{% url 'commercial_proposal:create_project' workspace_id project_id %}">Создайте первое!</a>
+        {% else %}
+            <a href="{% url 'commercial_proposal:create_proposal' %}">Создайте первое!</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock main_content %}

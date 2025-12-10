@@ -1,0 +1,25 @@
+{% extends "itcost/base_with_sidebar.html" %}
+
+{% block title %}Удаление расчета{% endblock %}
+
+{% block main_content %}
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-transparent border-bottom-0">
+            <h5 class="mb-0">Подтверждение удаления</h5>
+        </div>
+        <div class="card-body">
+            <p>Вы уверены, что хотите удалить расчет <strong>"{{ calculation.project_name }}"</strong>?</p>
+            <p class="text-muted">Это действие нельзя отменить.</p>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-danger">Да, удалить</button>
+                    <a href="{% url 'itcost:calculation_detail' calculation.pk %}" class="btn btn-secondary">Отмена</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock main_content %}
+

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{{ proposal.title }}</h2>
+        <div>
+            <a href="{% url 'commercial_proposal:download_pdf' proposal.pk %}" class="btn btn-danger">PDF</a>
+            <a href="{% url 'commercial_proposal:download_excel' proposal.pk %}" class="btn btn-success">Excel</a>
+            <a href="{% url 'commercial_proposal:download_word' proposal.pk %}" class="btn btn-primary">Word</a>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <p><strong>Дата формирования:</strong> {{ proposal.creation_date }}</p>
+            <p><strong>Заказчик:</strong> {{ proposal.customer.name }}</p>
+            <p><strong>Руководитель:</strong> {{ proposal.manager_position }} {{ proposal.manager_name }}</p>
+            <p><strong>Техническое задание:</strong> {{ proposal.technical_spec }}</p>
+            <p><strong>Общая стоимость:</strong> {{ proposal.total_cost }} руб.</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5>Услуги</h5>
+        </div>
+        <div class="card-body">
+            {% if proposal.services.all %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Название</th>
+                            <th>Часы</th>
+                            <th>Период</th>
+                            <th>Стоимость</th>
+                            <th>Сумма в месяц</th>
+                            <th>Бессрочный</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for service in proposal.services.all %}
+                        <tr>
+                            <td>{{ service.name }}</td>
+                            <td>{{ service.hours|default:"—" }}</td>
+                            <td>
+                                {% if service.is_indefinite %}
+                                    Бессрочно
+                                {% else %}
+                                    {{ service.start_date }} - {{ service.end_date }}
+                                {% endif %}
+                            </td>
+                            <td>{{ service.cost|default:"—" }} {% if service.cost %}руб.{% endif %}</td>
+                            <td>{{ service.monthly_cost|default:"—" }} {% if service.monthly_cost %}руб.{% endif %}</td>
+                            <td>{% if service.is_indefinite %}Да{% else %}Нет{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>Услуги не добавлены.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{% url 'commercial_proposal:proposal_list' %}" class="btn btn-secondary">Назад к списку</a>
+        <a href="/commercial/" class="btn btn-primary">Вернуться в коммерческий раздел</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Просмотр: {{ subcontractor.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">
+                        <i class="fas fa-building"></i> {{ subcontractor.name }}
+                        <span class="badge {% if subcontractor.is_active %}bg-success{% else %}bg-secondary{% endif %} ms-2">
+                            {{ subcontractor.is_active|yesno:"Активен,Неактивен" }}
+                        </span>
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Основная информация</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Тип:</th>
+                                    <td>{{ subcontractor.get_contractor_type_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th>ИНН:</th>
+                                    <td>{{ subcontractor.inn }}</td>
+                                </tr>
+                                {% if subcontractor.kpp %}
+                                <tr>
+                                    <th>КПП:</th>
+                                    <td>{{ subcontractor.kpp }}</td>
+                                </tr>
+                                {% endif %}
+                                <tr>
+                                    <th>ОГРН:</th>
+                                    <td>{{ subcontractor.ogrn }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Контакты</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Телефон:</th>
+                                    <td>{{ subcontractor.phone }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Email:</th>
+                                    <td>{{ subcontractor.email }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Руководитель:</th>
+                                    <td>{{ subcontractor.director_name }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h5>Адреса</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Юридический:</th>
+                                    <td>{{ subcontractor.legal_address }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Фактический:</th>
+                                    <td>{{ subcontractor.actual_address }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Банковские реквизиты</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Банк:</th>
+                                    <td>{{ subcontractor.bank_name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Р/с:</th>
+                                    <td>{{ subcontractor.bank_account }}</td>
+                                </tr>
+                                <tr>
+                                    <th>К/с:</th>
+                                    <td>{{ subcontractor.corr_account }}</td>
+                                </tr>
+                                <tr>
+                                    <th>БИК:</th>
+                                    <td>{{ subcontractor.bik }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{% url 'subcontractors:list' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Назад к списку
+                        </a>
+                        {% if perms.subcontractors.change_subcontractor %}
+                        <a href="{% url 'subcontractors:edit' subcontractor.pk %}" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Редактировать
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

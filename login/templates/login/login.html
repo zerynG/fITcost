@@ -1,0 +1,414 @@
+<!-- логин -->
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация и Авторизация</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            overflow: hidden;
+        }
+
+        .form-container {
+            padding: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background: #f8f9fa;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .form {
+            display: none;
+        }
+
+        .form.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+
+        .form-footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .error {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .success-message {
+            color: #28a745;
+            text-align: center;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .csrf-token {
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 20px;
+                width: calc(100% - 40px);
+            }
+
+            .form-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <div class="tabs">
+                <button class="tab active" onclick="showForm('login')">Вход</button>
+                <button class="tab" onclick="showForm('register')">Регистрация</button>
+            </div>
+
+            <!-- Форма авторизации -->
+            <form id="loginForm" class="form active">
+                {% csrf_token %}
+                <h2>Вход в аккаунт</h2>
+
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" name="email" placeholder="Введите ваш email" required>
+                    <div class="error" id="loginEmailError">Пожалуйста, введите корректный email</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPassword">Пароль</label>
+                    <input type="password" id="loginPassword" name="password" placeholder="Введите ваш пароль" required>
+                    <div class="error" id="loginPasswordError">Пожалуйста, введите пароль</div>
+                </div>
+
+                <button type="submit" class="btn">Войти</button>
+                <div class="success-message" id="loginSuccess">Успешный вход! Перенаправление...</div>
+
+                <div class="form-footer">
+                    Нет аккаунта? <a href="#" onclick="showForm('register')">Зарегистрируйтесь</a>
+                </div>
+            </form>
+
+            <!-- Форма регистрации -->
+            <form id="registerForm" class="form">
+                {% csrf_token %}
+                <h2>Создать аккаунт</h2>
+
+                <div class="form-group">
+                    <label for="registerName">Имя</label>
+                    <input type="text" id="registerName" name="name" placeholder="Введите ваше имя" required>
+                    <div class="error" id="registerNameError">Пожалуйста, введите ваше имя</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" name="email" placeholder="Введите ваш email" required>
+                    <div class="error" id="registerEmailError">Пожалуйста, введите корректный email</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="registerPassword">Пароль</label>
+                    <input type="password" id="registerPassword" name="password" placeholder="Создайте пароль" required>
+                    <div class="error" id="registerPasswordError">Пароль должен содержать не менее 6 символов</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="registerConfirmPassword">Подтвердите пароль</label>
+                    <input type="password" id="registerConfirmPassword" name="confirm_password" placeholder="Повторите пароль" required>
+                    <div class="error" id="registerConfirmPasswordError">Пароли не совпадают</div>
+                </div>
+
+                <button type="submit" class="btn">Зарегистрироваться</button>
+                <div class="success-message" id="registerSuccess">Успешная регистрация! Перенаправление...</div>
+
+                <div class="form-footer">
+                    Уже есть аккаунт? <a href="#" onclick="showForm('login')">Войдите</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Функция для получения CSRF токена
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+
+        function showForm(formType) {
+            // Скрываем все формы
+            document.querySelectorAll('.form').forEach(form => {
+                form.classList.remove('active');
+            });
+
+            // Убираем активный класс со всех вкладок
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Показываем нужную форму
+            document.getElementById(formType + 'Form').classList.add('active');
+
+            // Активируем нужную вкладку
+            document.querySelector(`.tab[onclick="showForm('${formType}')"]`).classList.add('active');
+        }
+
+        // Обработка формы авторизации
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            // Простая валидация
+            let isValid = true;
+
+            if (!validateEmail(email)) {
+                document.getElementById('loginEmailError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('loginEmailError').style.display = 'none';
+            }
+
+            if (password.length < 6) {
+                document.getElementById('loginPasswordError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('loginPasswordError').style.display = 'none';
+            }
+
+            if (isValid) {
+                try {
+                    const formData = new FormData();
+                    formData.append('csrfmiddlewaretoken', getCSRFToken());
+                    formData.append('email', email);
+                    formData.append('password', password);
+
+                    const response = await fetch('/auth/', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        document.getElementById('loginSuccess').style.display = 'block';
+                        setTimeout(() => {
+                            window.location.href = data.redirect_url;
+                        }, 1000);
+                    } else {
+                        alert('Ошибка: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Ошибка:', error);
+                    alert('Произошла ошибка при отправке данных. Проверьте консоль для подробностей.');
+                }
+            }
+        });
+
+        // Обработка формы регистрации
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+
+            // Валидация
+            let isValid = true;
+
+            if (name.trim().length < 2) {
+                document.getElementById('registerNameError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('registerNameError').style.display = 'none';
+            }
+
+            if (!validateEmail(email)) {
+                document.getElementById('registerEmailError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('registerEmailError').style.display = 'none';
+            }
+
+            if (password.length < 6) {
+                document.getElementById('registerPasswordError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('registerPasswordError').style.display = 'none';
+            }
+
+            if (password !== confirmPassword) {
+                document.getElementById('registerConfirmPasswordError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('registerConfirmPasswordError').style.display = 'none';
+            }
+
+            if (isValid) {
+                try {
+                    const formData = new FormData();
+                    formData.append('csrfmiddlewaretoken', getCSRFToken());
+                    formData.append('name', name);
+                    formData.append('email', email);
+                    formData.append('password', password);
+                    formData.append('confirm_password', confirmPassword);
+
+                    const response = await fetch('/register/', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        document.getElementById('registerSuccess').style.display = 'block';
+                        setTimeout(() => {
+                            window.location.href = data.redirect_url;
+                        }, 1000);
+                    } else {
+                        alert('Ошибка: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Ошибка:', error);
+                    alert('Произошла ошибка при отправке данных. Проверьте консоль для подробностей.');
+                }
+            }
+        });
+
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        // Валидация в реальном времени
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', function() {
+                const errorElement = this.nextElementSibling;
+                if (errorElement && errorElement.classList.contains('error')) {
+                    errorElement.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

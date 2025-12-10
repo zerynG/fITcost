@@ -1,0 +1,169 @@
+{% extends 'base_with_sidebar.html' %}
+
+{% block main_content %}
+<div class="container mt-4">
+    <!-- Кнопка Назад -->
+    <div class="row mb-3">
+        <div class="col-md-12">
+            {% if project_id %}
+                <a href="{% url 'workspace:project_detail' workspace_id project_id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Назад к проекту
+                </a>
+            {% else %}
+                <a href="/home/" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Список стоимостей НМА{% if project %} ({{ project.name }}){% endif %}</h2>
+        {% if project_id %}
+            <a href="{% url 'nmacost:create_project' workspace_id project_id %}" class="btn btn-primary">
+                ➕ Создать новую стоимость НМА
+            </a>
+        {% else %}
+            <a href="{% url 'nmacost:nmacost-create' %}" class="btn btn-primary">
+                ➕ Создать новую стоимость НМА
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            {% if page_obj %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Проект</th>
+                            <th>Срок разработки</th>
+                            <th>Итоговая стоимость</th>
+                            <th>Кол-во ресурсов</th>
+                            <th>Дата создания</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for nmacost in page_obj %}
+                        <tr>
+                            <td>{{ nmacost.id }}</td>
+                            <td>{% if nmacost.project %}{{ nmacost.project.name }}{% else %}Не указан{% endif %}</td>
+                            <td>{{ nmacost.development_period }}</td>
+                            <td>{{ nmacost.total_cost }} руб.</td>
+                            <td>{{ nmacost.resources.count }}</td>
+                            <td>{{ nmacost.created_at|date:"d.m.Y H:i" }}</td>
+                            <td>
+                                <a href="{% url 'nmacost:nmacost-detail' nmacost.id %}"
+                                   class="btn btn-sm btn-info" title="Просмотреть">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'nmacost:nmacost-edit' nmacost.id %}"
+                                   class="btn btn-sm btn-warning" title="Редактировать">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'nmacost:resource-add' nmacost.id %}"
+                                   class="btn btn-sm btn-success" title="Добавить ресурс">
+                                    <i class="fas fa-plus"></i>
+                                </a>
+                                {% if has_pdf %}
+                                <a href="{% url 'nmacost:export-pdf' nmacost.id %}"
+                                   class="btn btn-sm btn-danger" title="Скачать PDF">
+                                    <i class="fas fa-file-pdf"></i>
+                                </a>
+                                {% endif %}
+                                <form method="post" action="{% url 'nmacost:nmacost-delete' nmacost.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Удалить"
+                                            onclick="return confirm('Вы уверены, что хотите удалить эту стоимость НМА?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Пагинация -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Назад</a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Вперед</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="text-center py-5">
+                <div class="text-muted mb-3">
+                    <i style="font-size: 3rem;">📋</i>
+                </div>
+                <h4>Нет созданных стоимостей НМА</h4>
+                <p class="text-muted">Создайте первую стоимость НМА, нажав на кнопку выше</p>
+                <a href="{% url 'nmacost:nmacost-create' %}" class="btn btn-primary mt-3">
+                    Создать первую стоимость НМА
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">{{ page_obj.paginator.count }}</h5>
+                    <p class="card-text">Всего записей</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {{ total_resources|default:0 }}
+                    </h5>
+                    <p class="card-text">Всего ресурсов</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {{ total_cost|default:0 }} руб.
+                    </h5>
+                    <p class="card-text">Общая стоимость</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock main_content %}

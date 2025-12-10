@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <h2>Редактировать ресурс: {{ resource.name }}</h2>
+            
+            <form method="post" id="resourceForm">
+                {% csrf_token %}
+                
+                <!-- Основная информация о ресурсе -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5>Основная информация</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>{{ form.name.label }} <span class="text-danger">*</span></label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="text-danger">{{ form.name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>{{ form.resource_type.label }} <span class="text-danger">*</span></label>
+                            {{ form.resource_type }}
+                            {% if form.resource_type.errors %}
+                                <div class="text-danger">{{ form.resource_type.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Выбор исполнителя -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5>Выбор исполнителя</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Сотрудник -->
+                        <div class="resource-section" id="employee-section" style="display: none;">
+                            <div class="form-group">
+                                <label>{{ form.employee.label }}</label>
+                                {{ form.employee }}
+                                {% if form.employee.errors %}
+                                    <div class="text-danger">{{ form.employee.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Исполнитель -->
+                        <div class="resource-section" id="contractor-section" style="display: none;">
+                            <div class="form-group">
+                                <label>{{ form.contractor.label }}</label>
+                                {{ form.contractor }}
+                                {% if form.contractor.errors %}
+                                    <div class="text-danger">{{ form.contractor.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group" id="service-field">
+                                <label>{{ form.service.label }}</label>
+                                {{ form.service }}
+                                <small class="form-text text-muted">Выберите услугу исполнителя или оставьте пустым для использования значений по умолчанию</small>
+                                {% if form.service.errors %}
+                                    <div class="text-danger">{{ form.service.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Субподрядчик -->
+                        <div class="resource-section" id="subcontractor-section" style="display: none;">
+                            <div class="form-group">
+                                <label>{{ form.subcontractor.label }}</label>
+                                {{ form.subcontractor }}
+                                {% if form.subcontractor.errors %}
+                                    <div class="text-danger">{{ form.subcontractor.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>{{ form.subcontractor_rate.label }}</label>
+                                {{ form.subcontractor_rate }}
+                                <small class="form-text text-muted">Стоимость за день работы субподрядчика</small>
+                                {% if form.subcontractor_rate.errors %}
+                                    <div class="text-danger">{{ form.subcontractor_rate.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Оборудование -->
+                        <div class="resource-section" id="equipment-section" style="display: none;">
+                            <div class="form-group">
+                                <label>{{ form.equipment.label }}</label>
+                                {{ form.equipment }}
+                                {% if form.equipment.errors %}
+                                    <div class="text-danger">{{ form.equipment.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Параметры услуги -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5>Параметры услуги</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>{{ form.service_name.label }} <span class="text-danger">*</span></label>
+                            {{ form.service_name }}
+                            {% if form.service_name.errors %}
+                                <div class="text-danger">{{ form.service_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>{{ form.start_date.label }} <span class="text-danger">*</span></label>
+                                    {{ form.start_date }}
+                                    {% if form.start_date.errors %}
+                                        <div class="text-danger">{{ form.start_date.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>{{ form.end_date.label }} <span class="text-danger">*</span></label>
+                                    {{ form.end_date }}
+                                    {% if form.end_date.errors %}
+                                        <div class="text-danger">{{ form.end_date.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>{{ form.quantity.label }} <span class="text-danger">*</span></label>
+                            {{ form.quantity }}
+                            <small class="form-text text-muted">Количество часов/дней в зависимости от типа ресурса</small>
+                            {% if form.quantity.errors %}
+                                <div class="text-danger">{{ form.quantity.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>{{ form.margin.label }}</label>
+                            {{ form.margin }}
+                            <small class="form-text text-muted">Маржинальность в процентах (видна только руководителю)</small>
+                            {% if form.margin.errors %}
+                                <div class="text-danger">{{ form.margin.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                    <a href="{% url 'projects:manage_resources' project.pk %}" class="btn btn-secondary">Отмена</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Функция для обновления видимости секций ресурсов
+    function updateResourceSections() {
+        var resourceType = $('#id_resource_type').val();
+        $('.resource-section').hide();
+        
+        if (resourceType) {
+            $('#' + resourceType + '-section').show();
+        }
+    }
+    
+    // Обработчик изменения типа ресурса
+    $('#id_resource_type').change(function() {
+        updateResourceSections();
+    });
+    
+    // Инициализация при загрузке
+    updateResourceSections();
+    
+    // Обновление списка услуг при выборе исполнителя
+    $('#id_contractor').change(function() {
+        var contractorId = $(this).val();
+        if (contractorId) {
+            $.ajax({
+                url: '{% url "projects:get_services_for_contractor" 0 %}'.replace('0', contractorId),
+                success: function(data) {
+                    var serviceSelect = $('#id_service');
+                    var currentValue = serviceSelect.val();
+                    serviceSelect.empty();
+                    serviceSelect.append('<option value="">---------</option>');
+                    $.each(data.services, function(index, service) {
+                        var selected = (service.id == currentValue) ? 'selected' : '';
+                        serviceSelect.append(
+                            '<option value="' + service.id + '" ' + selected + '>' + 
+                            service.name + ' (' + service.rate + ' руб./' + service.unit + ')' +
+                            '</option>'
+                        );
+                    });
+                },
+                error: function() {
+                    console.log('Ошибка загрузки услуг');
+                }
+            });
+        } else {
+            $('#id_service').empty().append('<option value="">---------</option>');
+        }
+    });
+});
+</script>
+{% endblock %}
+

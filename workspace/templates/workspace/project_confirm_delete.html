@@ -1,0 +1,37 @@
+{% extends 'base_with_sidebar.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">Подтверждение удаления</h4>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Вы уверены, что хотите удалить проект "{{ project.name }}"?</p>
+                    
+                    {% if project.has_related_objects %}
+                    <div class="alert alert-warning">
+                        <strong>Внимание!</strong> Этот проект связан с другими объектами системы.
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger flex-fill">
+                                <i class="bi bi-trash"></i> Удалить
+                            </button>
+                            <a href="{% url 'workspace:project_detail' workspace_id=project.workspace.id project_id=project.id %}" 
+                               class="btn btn-secondary flex-fill">
+                                <i class="bi bi-x-circle"></i> Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

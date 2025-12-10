@@ -1,0 +1,135 @@
+{% extends 'base_with_sidebar.html' %}
+{% load static %}
+
+{% block main_content %}
+<div class="container-fluid">
+    <!-- Кнопка Назад -->
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <a href="http://127.0.0.1:8000/home/" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Назад
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Мои проекты</h2>
+                <a href="{% url 'projects:project_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Создать новый проект
+                </a>
+            </div>
+
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if projects %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Название проекта</th>
+                            <th>Заказчик</th>
+                            <th>Дата начала</th>
+                            <th>Дата окончания</th>
+                            <th>Итоговая стоимость</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for project in projects %}
+                        <tr>
+                            <td>
+                                <strong>{{ project.name }}</strong>
+                                {% if project.description %}
+                                <br>
+                                <small class="text-muted">{{ project.description|truncatewords:10 }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if project.customer %}
+                                {{ project.customer.name }}
+                                {% else %}
+                                <span class="text-muted">Не указан</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ project.start_date }}</td>
+                            <td>{{ project.end_date }}</td>
+                            <td>
+                                <strong>{{ project.total_cost }} руб.</strong>
+                                <br>
+                                <small class="text-muted">
+                                    Себест.: {{ project.cost_price }} руб.
+                                </small>
+                            </td>
+                            <td>
+                                {% if project.end_date > today %}
+                                <span class="badge bg-success text-white px-3 py-2">Активный</span>
+                                {% else %}
+                                <span class="badge bg-secondary text-white px-3 py-2">Завершен</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'projects:project_detail' project.pk %}" 
+                                       class="btn btn-sm btn-info" title="Просмотр">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'projects:project_detail' project.pk %}" 
+                                       class="btn btn-sm btn-warning" title="Редактировать">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'projects:project_delete' project.pk %}" 
+                                       class="btn btn-sm btn-danger" 
+                                       title="Удалить"
+                                       onclick="return confirm('Вы уверены, что хотите удалить проект \"{{ project.name }}\"? Это действие нельзя отменить!');">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <div class="text-muted mb-3">
+                    <i class="fas fa-folder-open fa-3x"></i>
+                </div>
+                <h4>Проекты не найдены</h4>
+                <p>Создайте свой первый проект, чтобы начать работу</p>
+                <a href="{% url 'projects:project_create' %}" class="btn btn-primary">
+                    Создать первый проект
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Инициализация всплывающих подсказок
+    $('[data-toggle="tooltip"]').tooltip();
+    
+    // Определяем текущую дату для сравнения со статусом проекта
+    const today = new Date().toISOString().split('T')[0];
+    window.today = today;
+});
+</script>
+{% endblock %}

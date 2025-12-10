@@ -1,0 +1,818 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система расчета стоимости IT-проекта</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{% static 'css/dark-theme.css' %}" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #f72585;
+            --light: #4cc9f0;
+            --dark: #1d3557;
+            --success: #4ade80;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gradient: linear-gradient(135deg, #4361ee, #3a0ca3, #7209b7);
+            --gradient-light: linear-gradient(135deg, #4cc9f0, #4361ee);
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --bg-light: #f8fafc;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-light);
+            min-height: 100vh;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: var(--gradient);
+            padding: 15px 30px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.1;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 1;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .company-info h1 {
+            font-size: 28px;
+            color: white;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .company-contacts {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            gap: 15px;
+        }
+
+        .company-contacts div {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            z-index: 1;
+        }
+
+        .user-welcome {
+            text-align: right;
+        }
+
+        .user-welcome .username {
+            font-weight: bold;
+            color: white;
+            font-size: 16px;
+        }
+
+        .user-welcome .role {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-logout {
+            background: rgba(239, 68, 68, 0.8);
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+
+        .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.9);
+        }
+
+
+        /* Темная тема для home.html */
+        [data-theme="dark"] body {
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .welcome-section {
+            background: #2d2d2d !important;
+            color: #e0e0e0 !important;
+            border-color: #404040 !important;
+        }
+
+        [data-theme="dark"] .action-btn {
+            background: linear-gradient(135deg, #2d2d2d 0%, #252525 100%) !important;
+            border-color: #404040 !important;
+        }
+
+        [data-theme="dark"] .action-btn:hover {
+            box-shadow: 0 20px 40px rgba(76, 201, 240, 0.3), 0 10px 20px rgba(0, 0, 0, 0.3) !important;
+            border-color: #4cc9f0 !important;
+        }
+
+        [data-theme="dark"] .action-btn.disabled {
+            background: linear-gradient(135deg, #1a1a1a 0%, #151515 100%) !important;
+        }
+
+        [data-theme="dark"] .action-btn i {
+            color: #4cc9f0 !important;
+            filter: drop-shadow(0 4px 8px rgba(76, 201, 240, 0.3)) !important;
+        }
+
+        [data-theme="dark"] .action-btn:hover i {
+            filter: drop-shadow(0 6px 12px rgba(76, 201, 240, 0.5)) !important;
+        }
+
+        [data-theme="dark"] .action-btn.disabled i {
+            color: #505050 !important;
+            filter: none !important;
+        }
+
+        [data-theme="dark"] .action-btn span {
+            color: #e0e0e0 !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        [data-theme="dark"] .action-btn:hover span {
+            color: #4cc9f0 !important;
+            text-shadow: 0 4px 8px rgba(76, 201, 240, 0.3) !important;
+        }
+
+        [data-theme="dark"] .action-btn.disabled span {
+            color: #505050 !important;
+            text-shadow: none !important;
+        }
+
+        [data-theme="dark"] .calculator-section,
+        [data-theme="dark"] .about-section {
+            background: #2d2d2d !important;
+            color: #e0e0e0 !important;
+            border-color: #404040 !important;
+        }
+
+        [data-theme="dark"] .form-control,
+        [data-theme="dark"] .form-group select {
+            background: #3a3a3a !important;
+            border-color: #404040 !important;
+            color: #e0e0e0 !important;
+        }
+
+        [data-theme="dark"] .form-control:focus,
+        [data-theme="dark"] .form-group select:focus {
+            background: #3a3a3a !important;
+            border-color: #4cc9f0 !important;
+            color: #e0e0e0 !important;
+        }
+
+        [data-theme="dark"] .btn-calculate {
+            background: #4361ee !important;
+            color: white !important;
+        }
+
+        [data-theme="dark"] .btn-calculate:hover {
+            background: #3a0ca3 !important;
+        }
+
+        [data-theme="dark"] .calculator-result {
+            background: #3a3a3a !important;
+            border-color: #404040 !important;
+        }
+
+        [data-theme="dark"] .result-label {
+            color: #b0b0b0 !important;
+        }
+
+        [data-theme="dark"] .result-value {
+            color: #4cc9f0 !important;
+        }
+
+        [data-theme="dark"] .about-features li {
+            color: #e0e0e0 !important;
+        }
+
+        [data-theme="dark"] .section-title {
+            color: #e0e0e0 !important;
+        }
+
+
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .welcome-section {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            margin-bottom: 30px;
+            border-left: 5px solid var(--accent);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: var(--gradient-light);
+            opacity: 0.05;
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+
+        .welcome-section h2 {
+            color: var(--dark);
+            margin-bottom: 20px;
+            font-size: 32px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome-section p {
+            font-size: 18px;
+            color: var(--text-light);
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+            padding: 0 20px;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 24px;
+            padding: 60px 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 1px 8px rgba(0, 0, 0, 0.08);
+            text-decoration: none;
+            color: var(--text-dark);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+            border: 4px solid transparent;
+            position: relative;
+            overflow: hidden;
+            min-height: 280px;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 0;
+        }
+
+        .action-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            transform: scale(0);
+            transition: transform 0.6s ease;
+            z-index: 1;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(67, 97, 238, 0.2), 0 10px 20px rgba(0, 0, 0, 0.15);
+            border-color: var(--primary);
+        }
+
+        .action-btn:hover::before {
+            opacity: 0.05;
+        }
+
+        .action-btn:hover::after {
+            transform: scale(1);
+        }
+
+        .action-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        }
+
+        .action-btn i {
+            font-size: 72px;
+            color: var(--primary);
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+            transition: all 0.4s ease;
+            filter: drop-shadow(0 4px 8px rgba(67, 97, 238, 0.2));
+        }
+
+        .action-btn:hover i {
+            transform: scale(1.1) rotate(5deg);
+            filter: drop-shadow(0 6px 12px rgba(67, 97, 238, 0.4));
+        }
+
+        .action-btn.disabled i {
+            color: var(--text-light);
+            filter: none;
+        }
+
+        .action-btn span {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--dark);
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover span {
+            color: var(--primary);
+            text-shadow: 0 4px 8px rgba(67, 97, 238, 0.2);
+        }
+
+        .action-btn.disabled span {
+            color: var(--text-light);
+            text-shadow: none;
+        }
+
+        .calculator-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .calculator-section::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--gradient);
+        }
+
+        .section-title {
+            color: var(--dark);
+            margin-bottom: 25px;
+            font-size: 28px;
+            text-align: center;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient);
+            border-radius: 2px;
+        }
+
+        .calculator-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            background: var(--bg-light);
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            color: var(--text-dark);
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        .calculator-result {
+            background: var(--gradient-light);
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 20px;
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .result-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .result-label {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .result-value {
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .btn-calculate {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            width: 100%;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-calculate::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .btn-calculate:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-calculate:hover::before {
+            left: 100%;
+        }
+
+        .about-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .about-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--gradient);
+        }
+
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .about-text {
+            line-height: 1.7;
+            color: var(--text-light);
+        }
+
+        .about-text p {
+            margin-bottom: 15px;
+        }
+
+        .about-features {
+            list-style: none;
+        }
+
+        .about-features li {
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .about-features li:hover {
+            background: rgba(67, 97, 238, 0.05);
+            padding-left: 10px;
+            border-radius: 8px;
+        }
+
+        .about-features li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-icon {
+            color: var(--success);
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        @media (max-width: 1024px) {
+            .action-buttons {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .action-btn {
+                padding: 50px 35px;
+                min-height: 250px;
+            }
+
+            .action-btn i {
+                font-size: 64px;
+            }
+
+            .action-btn span {
+                font-size: 24px;
+            }
+
+            .calculator-form, .about-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+                padding: 15px;
+            }
+
+            .logo-container {
+                justify-content: center;
+            }
+
+            .company-contacts {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .user-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .welcome-section {
+                padding: 25px;
+            }
+
+            .action-btn {
+                padding: 45px 30px;
+                min-height: 220px;
+            }
+
+            .action-btn i {
+                font-size: 56px;
+            }
+
+            .action-btn span {
+                font-size: 22px;
+            }
+
+            .welcome-section h2 {
+                font-size: 24px;
+            }
+
+            .welcome-section p {
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 15px;
+            }
+
+            .main-content {
+                padding: 0 15px;
+            }
+
+            .action-buttons {
+                gap: 25px;
+                padding: 0 10px;
+            }
+
+            .action-btn {
+                padding: 40px 25px;
+                min-height: 200px;
+                gap: 20px;
+            }
+
+            .action-btn i {
+                font-size: 48px;
+            }
+
+            .action-btn span {
+                font-size: 20px;
+            }
+
+            .section-title {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo-container">
+            <div class="logo">IT</div>
+            <div class="company-info">
+                <h1>ТехноИнновации</h1>
+                <div class="company-contacts">
+                    <div>📞 +7 (495) 123-45-67</div>
+                    <div>✉️ info@technoinnovations.ru</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="user-info">
+            <div class="user-welcome">
+                <div class="username">{% if user_full_name %}{{ user_full_name }}{% else %}{{ user.username }}{% endif %}</div>
+                <div class="role">{% if user_role %}{{ user_role }}{% else %}Пользователь{% endif %}</div>
+            </div>
+            <button id="theme-toggle-btn" class="btn" style="margin-right: 10px;" title="Переключить тему">
+                <i class="fas fa-moon"></i>
+                <span id="theme-toggle-text">Темная тема</span>
+            </button>
+            <a href="/logout/" class="btn btn-logout">Выйти</a>
+        </div>
+    </div>
+
+
+    <div class="main-content">
+        <div class="welcome-section">
+            <h2>Добро пожаловать в систему расчета стоимости IT-проектов</h2>
+            <p>Комплексная платформа для управления проектами, расчета стоимости разработки,
+            ведения реестров и формирования коммерческих предложений.</p>
+        </div>
+
+        <div class="action-buttons">
+            <a href="{% url 'workspace:workspace_list' %}" class="action-btn">
+                <i class="fas fa-briefcase"></i>
+                <span>Рабочая область</span>
+            </a>
+            <div class="action-btn disabled" title="Скоро будет доступно">
+                <i class="fas fa-project-diagram"></i>
+                <span>Управление проектом</span>
+            </div>
+            <div class="action-btn disabled" title="Скоро будет доступно">
+                <i class="fas fa-calculator"></i>
+                <span>Система расчета стоимости</span>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Имитация загрузки данных
+            setTimeout(() => {
+                const welcomeSection = document.querySelector('.welcome-section p');
+                const userName = '{% if user_full_name %}{{ user_full_name }}{% else %}{{ user.username }}{% endif %}';
+                welcomeSection.innerHTML = 'Добро пожаловать, <strong>' + userName + '</strong>!<br>Сегодня ' +
+                    new Date().toLocaleDateString('ru-RU', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    }) + '. Готовы к работе?';
+            }, 1000);
+        });
+    </script>
+    <script src="{% static 'js/theme-toggle.js' %}"></script>
+</body>
+</html>

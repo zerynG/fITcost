@@ -1,0 +1,159 @@
+{% extends 'base_with_sidebar.html' %}
+{% load static %}
+
+{% block title %}Реестр сотрудников{% endblock %}
+
+{% block main_content %}
+<div class="container-fluid py-4">
+   <!-- Кнопка Назад -->
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <a href="http://127.0.0.1:8000/home/" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Назад
+            </a>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Реестр сотрудников</h1>
+        {% if project_id and workspace_id %}
+            <a href="{% url 'employees:employee_create_project' workspace_id project_id %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Добавить сотрудника
+            </a>
+        {% else %}
+            <a href="{% url 'employees:employee_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Добавить сотрудника
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Фильтры -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-6">
+                    {{ filter_form.position }}
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check form-switch mt-2">
+                        {{ filter_form.active_only }}
+                        <label class="form-check-label" for="{{ filter_form.active_only.id_for_label }}">
+                            Только активные
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-filter"></i> Применить
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Таблица сотрудников -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ФИО</th>
+                            <th>Должность</th>
+                            <th>Оклад</th>
+                            <th>Налоговая ставка</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for employee in employees %}
+                        <tr>
+                            <td>
+                                <strong>{{ employee.get_full_name }}</strong>
+                            </td>
+                            <td>{{ employee.position }}</td>
+                            <td>{{ employee.salary }} ₽</td>
+                            <td>{{ employee.tax_rate }}%</td>
+                            <td>
+                                <span class="badge bg-{% if employee.is_active %}success{% else %}secondary{% endif %}">
+                                    {% if employee.is_active %}Активен{% else %}Неактивен{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                {% if project_id and workspace_id %}
+                                    <a href="{% url 'employees:employee_edit_project' workspace_id project_id employee.pk %}"
+                                       class="btn btn-sm btn-warning" title="Редактировать">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'employees:employee_edit' employee.pk %}"
+                                       class="btn btn-sm btn-warning" title="Редактировать">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                {% endif %}
+
+                                <form method="post" action="{% url 'employees:employee_toggle_active' employee.pk %}"
+                                      class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-secondary"
+                                            title="{% if employee.is_active %}Деактивировать{% else %}Активировать{% endif %}">
+                                        <i class="fas fa-{% if employee.is_active %}toggle-on{% else %}toggle-off{% endif %}"></i>
+                                    </button>
+                                </form>
+
+                                <button type="button" class="btn btn-sm btn-danger"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteModal{{ employee.pk }}"
+                                        title="Удалить">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+
+                                <!-- Модальное окно подтверждения удаления -->
+                                <div class="modal fade" id="deleteModal{{ employee.pk }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Подтверждение удаления</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Вы уверены, что хотите удалить сотрудника
+                                                   <strong>{{ employee.get_full_name }}</strong>?</p>
+                                                <p class="text-danger">Это действие нельзя отменить.</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Отмена</button>
+                                                {% if project_id and workspace_id %}
+                                                    <form method="post" action="{% url 'employees:employee_delete_project' workspace_id project_id employee.pk %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-danger">Удалить</button>
+                                                    </form>
+                                                {% else %}
+                                                    <form method="post" action="{% url 'employees:employee_delete' employee.pk %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-danger">Удалить</button>
+                                                    </form>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                <i class="fas fa-users fa-2x mb-2"></i>
+                                <p>Сотрудники не найдены</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

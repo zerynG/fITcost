@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">Подтверждение удаления</h4>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Вы уверены, что хотите удалить проект <strong>"{{ project.name }}"</strong>?</p>
+                    
+                    <div class="alert alert-warning">
+                        <strong>Внимание!</strong> Это действие нельзя отменить. Все данные проекта, включая ресурсы и расчеты, будут безвозвратно удалены.
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Информация о проекте:</strong>
+                        <ul>
+                            <li>Название: {{ project.name }}</li>
+                            <li>Дата начала: {{ project.start_date }}</li>
+                            <li>Дата окончания: {{ project.end_date }}</li>
+                            <li>Количество ресурсов: {{ project.projectresource_set.count }}</li>
+                            <li>Итоговая стоимость: {{ project.total_cost|floatformat:2 }} руб.</li>
+                        </ul>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger flex-fill">
+                                <i class="fas fa-trash"></i> Удалить проект
+                            </button>
+                            <a href="{% url 'projects:project_detail' project.pk %}" 
+                               class="btn btn-secondary flex-fill">
+                                <i class="fas fa-times"></i> Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

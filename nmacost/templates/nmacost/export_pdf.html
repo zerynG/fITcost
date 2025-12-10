@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        body { 
+            font-family: "Times-Roman", "Times New Roman", serif; 
+            margin: 20px;
+            font-size: 12px;
+        }
+        .header { text-align: center; margin-bottom: 30px; }
+        .section { margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { 
+            border: 1px solid #ddd; 
+            padding: 8px; 
+            text-align: left;
+            font-family: "Times-Roman", "Times New Roman", serif;
+        }
+        th { background-color: #f2f2f2; font-weight: bold; }
+        .total-row { font-weight: bold; background-color: #e9ecef; }
+        .text-right { text-align: right; }
+        h1, h2, h3 {
+            font-family: "Times-Roman", "Times New Roman", serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Стоимость Нематериального Актива</h1>
+        <h2>Проект: {% if nmacost.project %}{{ nmacost.project.name }}{% else %}Без проекта{% endif %}</h2>
+    </div>
+
+    <div class="section">
+        <p><strong>Срок разработки:</strong> {{ nmacost.development_period }}</p>
+        <p><strong>Итоговая стоимость:</strong> {{ nmacost.total_cost }} руб.</p>
+    </div>
+
+    <div class="section">
+        <h3>Таблица ресурсов</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Наименование</th>
+                    <th>Описание</th>
+                    <th>Количество</th>
+                    <th>Единица</th>
+                    <th>Цена за единицу</th>
+                    <th>Общая стоимость</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for resource in resources %}
+                <tr>
+                    <td>{{ resource.name }}</td>
+                    <td>{{ resource.description }}</td>
+                    <td>{{ resource.quantity }}</td>
+                    <td>{{ resource.unit }}</td>
+                    <td>{{ resource.unit_cost }} руб.</td>
+                    <td>{{ resource.total_cost }} руб.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="5" class="text-right">Итого:</td>
+                    <td>{{ nmacost.total_cost }} руб.</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="footer">
+        <p>Сгенерировано: {% now "d.m.Y H:i" %}</p>
+    </div>
+</body>
+</html>

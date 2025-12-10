@@ -1,0 +1,89 @@
+{% extends 'base_with_sidebar.html' %}
+{% load static %}
+
+{% block title %}Реестр Оборудования{% endblock %}
+
+{% block main_content %}
+<div class="container-fluid">
+    <!-- Кнопка Назад -->
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <a href="http://127.0.0.1:8000/home/" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Назад
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Реестр Оборудования</h3>
+                    <div class="card-tools">
+                        {% if project_id and workspace_id %}
+                            <a href="{% url 'equipment:create_project' workspace_id project_id %}" class="btn btn-success">
+                                <i class="fas fa-plus"></i> Добавить оборудование
+                            </a>
+                        {% else %}
+                            <a href="{% url 'equipment:create' %}" class="btn btn-success">
+                                <i class="fas fa-plus"></i> Добавить оборудование
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Название</th>
+                                <th>Тип приобретения</th>
+                                <th>Единица измерения</th>
+                                <th>Стоимость за единицу</th>
+                                <th>Экспл. стоимость</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in equipment_list %}
+                            <tr>
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.get_acquisition_type_display }}</td>
+                                <td>{{ item.get_unit_display }}</td>
+                                <td>{{ item.service_cost_per_unit }} руб.</td>
+                                <td>
+                                    {% if item.operational_cost %}
+                                        {{ item.operational_cost }} руб.
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if project_id and workspace_id %}
+                                        <a href="{% url 'equipment:update_project' workspace_id project_id item.pk %}" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'equipment:delete_project' workspace_id project_id item.pk %}" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    {% else %}
+                                        <a href="{% url 'equipment:update' item.pk %}" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'equipment:delete' item.pk %}" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">Нет оборудования</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

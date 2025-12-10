@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if subcontractor %}Редактирование {{ subcontractor.name }}{% else %}Добавление субподрядчика{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">
+                        {% if subcontractor %}
+                            <i class="fas fa-edit"></i> Редактирование: {{ subcontractor.name }}
+                        {% else %}
+                            <i class="fas fa-plus"></i> Добавление нового субподрядчика
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>{{ form.contractor_type.label }}</label>
+                                    <div class="mt-2">
+                                        {% for choice in form.contractor_type %}
+                                            <div class="form-check form-check-inline">
+                                                {{ choice.tag }}
+                                                <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                                    {{ choice.choice_label }}
+                                                </label>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% if form.contractor_type.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.contractor_type.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.inn.id_for_label }}">{{ form.inn.label }}</label>
+                                    {{ form.inn }}
+                                    {% if form.inn.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.inn.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.kpp.id_for_label }}">{{ form.kpp.label }}</label>
+                                    {{ form.kpp }}
+                                    <small class="form-text text-muted">Только для юридических лиц</small>
+                                    {% if form.kpp.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.kpp.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.ogrn.id_for_label }}">{{ form.ogrn.label }}</label>
+                                    {{ form.ogrn }}
+                                    {% if form.ogrn.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.ogrn.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.legal_address.id_for_label }}">{{ form.legal_address.label }}</label>
+                                    {{ form.legal_address }}
+                                    {% if form.legal_address.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.legal_address.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.actual_address.id_for_label }}">{{ form.actual_address.label }}</label>
+                                    {{ form.actual_address }}
+                                    {% if form.actual_address.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.actual_address.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>
+                                    {{ form.phone }}
+                                    {% if form.phone.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.phone.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                                    {{ form.email }}
+                                    {% if form.email.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.email.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.director_name.id_for_label }}">{{ form.director_name.label }}</label>
+                                    {{ form.director_name }}
+                                    {% if form.director_name.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.director_name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.bank_name.id_for_label }}">{{ form.bank_name.label }}</label>
+                                    {{ form.bank_name }}
+                                    {% if form.bank_name.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.bank_name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.bank_account.id_for_label }}">{{ form.bank_account.label }}</label>
+                                    {{ form.bank_account }}
+                                    {% if form.bank_account.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.bank_account.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.corr_account.id_for_label }}">{{ form.corr_account.label }}</label>
+                                    {{ form.corr_account }}
+                                    {% if form.corr_account.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.corr_account.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.bik.id_for_label }}">{{ form.bik.label }}</label>
+                                    {{ form.bik }}
+                                    {% if form.bik.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.bik.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group form-check mb-4">
+                            {{ form.is_active }}
+                            <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                {{ form.is_active.label }}
+                            </label>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Сохранить
+                            </button>
+                            <a href="{% url 'subcontractors:list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Динамическое управление полем КПП
+    const contractorTypeRadios = document.querySelectorAll('input[name="contractor_type"]');
+    const kppField = document.querySelector('#{{ form.kpp.id_for_label }}');
+    const kppLabel = document.querySelector('label[for="{{ form.kpp.id_for_label }}"]');
+
+    function updateKppField() {
+        const selectedType = document.querySelector('input[name="contractor_type"]:checked').value;
+        if (selectedType === 'individual') {
+            kppField.disabled = true;
+            kppField.value = '';
+            kppLabel.classList.add('text-muted');
+        } else {
+            kppField.disabled = false;
+            kppLabel.classList.remove('text-muted');
+        }
+    }
+
+    contractorTypeRadios.forEach(radio => {
+        radio.addEventListener('change', updateKppField);
+    });
+
+    // Инициализация при загрузке
+    updateKppField();
+});
+</script>
+{% endblock %}

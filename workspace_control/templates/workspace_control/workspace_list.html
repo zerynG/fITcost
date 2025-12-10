@@ -1,0 +1,55 @@
+{% extends 'base_with_sidebar.html' %}
+
+{% block main_content %}
+<div class="container mt-4">
+    <!-- Кнопка Назад -->
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <a href="http://127.0.0.1:8000/home/" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Назад
+            </a>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Рабочие области</h1>
+        <a href="{% url 'workspace_control:workspace_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Создать рабочую область
+        </a>
+    </div>
+
+    <div class="row">
+        {% for workspace in workspaces %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ workspace.name }}</h5>
+                    <p class="card-text">
+                        <strong>Поддомен:</strong> {{ workspace.subdomain }}<br>
+                        <strong>Админ:</strong> {{ workspace.admin.get_full_name|default:workspace.admin.username }}<br>
+                        <strong>Участников:</strong> {{ workspace.control_members.count }}
+                    </p>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'workspace_control:workspace_edit' workspace.pk %}" class="btn btn-sm btn-warning">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="{% url 'workspace_control:workspace_members' workspace.pk %}" class="btn btn-sm btn-secondary">
+                        <i class="fas fa-users"></i>
+                    </a>
+                    <a href="{% url 'workspace_control:workspace_delete' workspace.pk %}" class="btn btn-sm btn-danger">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                Рабочие области не созданы
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

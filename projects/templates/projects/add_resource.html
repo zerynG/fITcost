@@ -1,0 +1,634 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Добавить ресурс в проект: {{ project.name }}</h2>
+                <a href="{% url 'projects:manage_resources' project.pk %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> К управлению ресурсами
+                </a>
+            </div>
+
+            {% if not mode or mode == 'existing' %}
+                <!-- Режим: Добавить уже созданный ресурс -->
+                {% if not resource_type %}
+                    <!-- Шаг 1: Выбор типа ресурса -->
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Добавить уже созданный ресурс</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-4">Выберите тип ресурса, который вы хотите добавить из реестра:</p>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <a href="?mode=existing&type=employee" class="btn btn-outline-primary btn-lg btn-block">
+                                        <i class="fas fa-user-tie"></i> Сотрудник (Реестр сотрудников)
+                                    </a>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <a href="?mode=existing&type=contractor" class="btn btn-outline-success btn-lg btn-block">
+                                        <i class="fas fa-user"></i> Исполнитель (Реестр физических лиц)
+                                    </a>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <a href="?mode=existing&type=subcontractor" class="btn btn-outline-warning btn-lg btn-block">
+                                        <i class="fas fa-building"></i> Субподрядчик (Реестр юридических лиц)
+                                    </a>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <a href="?mode=existing&type=equipment" class="btn btn-outline-info btn-lg btn-block">
+                                        <i class="fas fa-tools"></i> Оборудование (Реестр оборудования)
+                                    </a>
+                                </div>
+                            </div>
+                            <hr>
+                            <p class="text-center mb-0">
+                                <a href="?mode=new" class="btn btn-link">Или создать новый ресурс</a>
+                            </p>
+                        </div>
+                    </div>
+                {% elif resource_type and not form %}
+                    <!-- Шаг 2: Выбор конкретного ресурса -->
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Выберите {{ resource_type|title }} из реестра</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="get">
+                                <input type="hidden" name="mode" value="existing">
+                                <input type="hidden" name="type" value="{{ resource_type }}">
+                                
+                                {% if resource_type == 'employee' %}
+                                    <div class="form-group">
+                                        <label for="employee_id">Выберите сотрудника:</label>
+                                        <select name="employee_id" id="employee_id" class="form-control" required>
+                                            <option value="">-- Выберите сотрудника --</option>
+                                            {% for employee in employees %}
+                                                <option value="{{ employee.pk }}">{{ employee.get_full_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                {% elif resource_type == 'contractor' %}
+                                    <div class="form-group">
+                                        <label for="contractor_id">Выберите исполнителя:</label>
+                                        <select name="contractor_id" id="contractor_id" class="form-control" required>
+                                            <option value="">-- Выберите исполнителя --</option>
+                                            {% for contractor in contractors %}
+                                                <option value="{{ contractor.pk }}">{{ contractor }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                {% elif resource_type == 'subcontractor' %}
+                                    <div class="form-group">
+                                        <label for="subcontractor_id">Выберите субподрядчика:</label>
+                                        <select name="subcontractor_id" id="subcontractor_id" class="form-control" required>
+                                            <option value="">-- Выберите субподрядчика --</option>
+                                            {% for subcontractor in subcontractors %}
+                                                <option value="{{ subcontractor.pk }}">{{ subcontractor.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                {% elif resource_type == 'equipment' %}
+                                    <div class="form-group">
+                                        <label for="equipment_id">Выберите оборудование:</label>
+                                        <select name="equipment_id" id="equipment_id" class="form-control" required>
+                                            <option value="">-- Выберите оборудование --</option>
+                                            {% for equipment in equipment_list %}
+                                                <option value="{{ equipment.pk }}">{{ equipment.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="mt-3">
+                                    <button type="submit" class="btn btn-primary">Продолжить</button>
+                                    <a href="?mode=existing" class="btn btn-secondary">Назад</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                {% elif form %}
+                    <!-- Шаг 3: Форма добавления ресурса в проект -->
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Добавить ресурс в проект</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" id="resourceForm">
+                                {% csrf_token %}
+                                <input type="hidden" name="form_type" value="add_resource">
+                                
+                                <div class="form-group">
+                                    <label>{{ form.name.label }} <span class="text-danger">*</span></label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                        <div class="text-danger">{{ form.name.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>{{ form.resource_type.label }} <span class="text-danger">*</span></label>
+                                    {{ form.resource_type }}
+                                    {% if form.resource_type.errors %}
+                                        <div class="text-danger">{{ form.resource_type.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                {% if resource_type == 'employee' %}
+                                    <div class="form-group">
+                                        <label>{{ form.employee.label }} <span class="text-danger">*</span></label>
+                                        {{ form.employee }}
+                                        {% if form.employee.errors %}
+                                            <div class="text-danger">{{ form.employee.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                {% elif resource_type == 'contractor' %}
+                                    <div class="form-group">
+                                        <label>{{ form.contractor.label }} <span class="text-danger">*</span></label>
+                                        {{ form.contractor }}
+                                        {% if form.contractor.errors %}
+                                            <div class="text-danger">{{ form.contractor.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="form-group">
+                                        <label>{{ form.service.label }}</label>
+                                        {{ form.service }}
+                                        {% if form.service.errors %}
+                                            <div class="text-danger">{{ form.service.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                {% elif resource_type == 'subcontractor' %}
+                                    <div class="form-group">
+                                        <label>{{ form.subcontractor.label }} <span class="text-danger">*</span></label>
+                                        {{ form.subcontractor }}
+                                        {% if form.subcontractor.errors %}
+                                            <div class="text-danger">{{ form.subcontractor.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="form-group">
+                                        <label>{{ form.subcontractor_rate.label }}</label>
+                                        {{ form.subcontractor_rate }}
+                                        {% if form.subcontractor_rate.errors %}
+                                            <div class="text-danger">{{ form.subcontractor_rate.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                {% elif resource_type == 'equipment' %}
+                                    <div class="form-group">
+                                        <label>{{ form.equipment.label }} <span class="text-danger">*</span></label>
+                                        {{ form.equipment }}
+                                        {% if form.equipment.errors %}
+                                            <div class="text-danger">{{ form.equipment.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="form-group">
+                                    <label>{{ form.service_name.label }} <span class="text-danger">*</span></label>
+                                    {{ form.service_name }}
+                                    {% if form.service_name.errors %}
+                                        <div class="text-danger">{{ form.service_name.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>{{ form.start_date.label }} <span class="text-danger">*</span></label>
+                                            {{ form.start_date }}
+                                            {% if form.start_date.errors %}
+                                                <div class="text-danger">{{ form.start_date.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>{{ form.end_date.label }} <span class="text-danger">*</span></label>
+                                            {{ form.end_date }}
+                                            {% if form.end_date.errors %}
+                                                <div class="text-danger">{{ form.end_date.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>{{ form.quantity.label }} <span class="text-danger">*</span></label>
+                                    {{ form.quantity }}
+                                    {% if form.quantity.errors %}
+                                        <div class="text-danger">{{ form.quantity.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>{{ form.margin.label }} <span class="text-danger">*</span></label>
+                                    {{ form.margin }}
+                                    {% if form.margin.errors %}
+                                        <div class="text-danger">{{ form.margin.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input type="checkbox" class="form-check-input" id="add_another" name="add_another">
+                                    <label class="form-check-label" for="add_another">
+                                        Добавить еще один ресурс
+                                    </label>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <button type="submit" class="btn btn-success">Добавить ресурс</button>
+                                    <a href="{% url 'projects:manage_resources' project.pk %}" class="btn btn-secondary">Отмена</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                {% endif %}
+            {% elif mode == 'new' %}
+                <!-- Режим: Создать новый ресурс -->
+                {% if not resource_type %}
+                    <!-- Шаг 1: Выбор типа ресурса для создания -->
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Создать новый ресурс</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-4">Выберите тип ресурса, который вы хотите создать:</p>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <a href="?mode=new&type=employee" class="btn btn-outline-primary btn-lg btn-block">
+                                        <i class="fas fa-user-tie"></i> Сотрудник
+                                    </a>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <a href="?mode=new&type=contractor" class="btn btn-outline-success btn-lg btn-block">
+                                        <i class="fas fa-user"></i> Исполнитель
+                                    </a>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <a href="?mode=new&type=subcontractor" class="btn btn-outline-warning btn-lg btn-block">
+                                        <i class="fas fa-building"></i> Субподрядчик
+                                    </a>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <a href="?mode=new&type=equipment" class="btn btn-outline-info btn-lg btn-block">
+                                        <i class="fas fa-tools"></i> Оборудование
+                                    </a>
+                                </div>
+                            </div>
+                            <hr>
+                            <p class="text-center mb-0">
+                                <a href="?mode=existing" class="btn btn-link">Или добавить уже созданный ресурс</a>
+                            </p>
+                        </div>
+                    </div>
+                {% elif resource_type %}
+                    <!-- Шаг 2: Форма создания ресурса -->
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Создать новый {{ resource_type|title }}</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if resource_type == 'employee' %}
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="form_type" value="create_resource">
+                                    <input type="hidden" name="resource_type" value="employee">
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <label for="{{ employee_form.last_name.id_for_label }}" class="form-label">{{ employee_form.last_name.label }} <span class="text-danger">*</span></label>
+                                            {{ employee_form.last_name }}
+                                            {% if employee_form.last_name.errors %}<div class="text-danger">{{ employee_form.last_name.errors }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="{{ employee_form.first_name.id_for_label }}" class="form-label">{{ employee_form.first_name.label }} <span class="text-danger">*</span></label>
+                                            {{ employee_form.first_name }}
+                                            {% if employee_form.first_name.errors %}<div class="text-danger">{{ employee_form.first_name.errors }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="{{ employee_form.middle_name.id_for_label }}" class="form-label">{{ employee_form.middle_name.label }}</label>
+                                            {{ employee_form.middle_name }}
+                                            {% if employee_form.middle_name.errors %}<div class="text-danger">{{ employee_form.middle_name.errors }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="{{ employee_form.position.id_for_label }}" class="form-label">{{ employee_form.position.label }} <span class="text-danger">*</span></label>
+                                        {{ employee_form.position }}
+                                        {% if employee_form.position.errors %}<div class="text-danger">{{ employee_form.position.errors }}</div>{% endif %}
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="{{ employee_form.salary.id_for_label }}" class="form-label">{{ employee_form.salary.label }} <span class="text-danger">*</span></label>
+                                            {{ employee_form.salary }}
+                                            {% if employee_form.salary.errors %}<div class="text-danger">{{ employee_form.salary.errors }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="{{ employee_form.tax_rate.id_for_label }}" class="form-label">{{ employee_form.tax_rate.label }} <span class="text-danger">*</span></label>
+                                            {{ employee_form.tax_rate }}
+                                            {% if employee_form.tax_rate.errors %}<div class="text-danger">{{ employee_form.tax_rate.errors }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        {{ employee_form.is_active }}
+                                        <label for="{{ employee_form.is_active.id_for_label }}" class="form-check-label">{{ employee_form.is_active.label }}</label>
+                                        {% if employee_form.is_active.errors %}<div class="text-danger">{{ employee_form.is_active.errors }}</div>{% endif %}
+                                    </div>
+                                    
+                                    <div class="mt-4">
+                                        <button type="submit" class="btn btn-success">Создать и добавить в проект</button>
+                                        <a href="?mode=new" class="btn btn-secondary">Назад</a>
+                                    </div>
+                                </form>
+                            {% elif resource_type == 'contractor' %}
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="form_type" value="create_resource">
+                                    <input type="hidden" name="resource_type" value="contractor">
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <label for="{{ contractor_form.last_name.id_for_label }}" class="form-label">{{ contractor_form.last_name.label }} <span class="text-danger">*</span></label>
+                                            {{ contractor_form.last_name }}
+                                            {% if contractor_form.last_name.errors %}<div class="text-danger">{{ contractor_form.last_name.errors }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="{{ contractor_form.first_name.id_for_label }}" class="form-label">{{ contractor_form.first_name.label }} <span class="text-danger">*</span></label>
+                                            {{ contractor_form.first_name }}
+                                            {% if contractor_form.first_name.errors %}<div class="text-danger">{{ contractor_form.first_name.errors }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="{{ contractor_form.middle_name.id_for_label }}" class="form-label">{{ contractor_form.middle_name.label }}</label>
+                                            {{ contractor_form.middle_name }}
+                                            {% if contractor_form.middle_name.errors %}<div class="text-danger">{{ contractor_form.middle_name.errors }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <label for="{{ contractor_form.contract_type.id_for_label }}" class="form-label">{{ contractor_form.contract_type.label }} <span class="text-danger">*</span></label>
+                                            {{ contractor_form.contract_type }}
+                                            {% if contractor_form.contract_type.errors %}<div class="text-danger">{{ contractor_form.contract_type.errors }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="{{ contractor_form.tax_rate.id_for_label }}" class="form-label">{{ contractor_form.tax_rate.label }}</label>
+                                            {{ contractor_form.tax_rate }}
+                                            <small class="form-text text-muted">Только для ГПХ</small>
+                                            {% if contractor_form.tax_rate.errors %}<div class="text-danger">{{ contractor_form.tax_rate.errors }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="{{ contractor_form.default_unit.id_for_label }}" class="form-label">{{ contractor_form.default_unit.label }} <span class="text-danger">*</span></label>
+                                            {{ contractor_form.default_unit }}
+                                            {% if contractor_form.default_unit.errors %}<div class="text-danger">{{ contractor_form.default_unit.errors }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="{{ contractor_form.default_rate.id_for_label }}" class="form-label">{{ contractor_form.default_rate.label }} <span class="text-danger">*</span></label>
+                                            {{ contractor_form.default_rate }}
+                                            {% if contractor_form.default_rate.errors %}<div class="text-danger">{{ contractor_form.default_rate.errors }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-4">
+                                        <button type="submit" class="btn btn-success">Создать и добавить в проект</button>
+                                        <a href="?mode=new" class="btn btn-secondary">Назад</a>
+                                    </div>
+                                </form>
+                                <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const contractTypeSelect = document.getElementById('id_contractor-contract_type');
+                                    const taxRateField = document.getElementById('id_contractor-tax_rate');
+                                    if (contractTypeSelect && taxRateField) {
+                                        function updateTaxRateField() {
+                                            if (contractTypeSelect.value === 'NPD') {
+                                                taxRateField.value = '0';
+                                                taxRateField.disabled = true;
+                                            } else {
+                                                taxRateField.disabled = false;
+                                            }
+                                        }
+                                        contractTypeSelect.addEventListener('change', updateTaxRateField);
+                                        updateTaxRateField();
+                                    }
+                                });
+                                </script>
+                            {% elif resource_type == 'subcontractor' %}
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="form_type" value="create_resource">
+                                    <input type="hidden" name="resource_type" value="subcontractor">
+                                    
+                                    <div class="mb-3">
+                                        <label for="{{ subcontractor_form.name.id_for_label }}" class="form-label">{{ subcontractor_form.name.label }} <span class="text-danger">*</span></label>
+                                        {{ subcontractor_form.name }}
+                                        {% if subcontractor_form.name.errors %}<div class="text-danger">{{ subcontractor_form.name.errors }}</div>{% endif %}
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">{{ subcontractor_form.contractor_type.label }} <span class="text-danger">*</span></label>
+                                        <div class="mt-2">
+                                            {% for choice in subcontractor_form.contractor_type %}
+                                                <div class="form-check form-check-inline">
+                                                    {{ choice.tag }}
+                                                    <label class="form-check-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        {% if subcontractor_form.contractor_type.errors %}<div class="text-danger">{{ subcontractor_form.contractor_type.errors }}</div>{% endif %}
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <label for="{{ subcontractor_form.inn.id_for_label }}" class="form-label">{{ subcontractor_form.inn.label }} <span class="text-danger">*</span></label>
+                                            {{ subcontractor_form.inn }}
+                                            {% if subcontractor_form.inn.errors %}<div class="text-danger">{{ subcontractor_form.inn.errors }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="{{ subcontractor_form.kpp.id_for_label }}" class="form-label">{{ subcontractor_form.kpp.label }}</label>
+                                            {{ subcontractor_form.kpp }}
+                                            <small class="form-text text-muted">Только для юридических лиц</small>
+                                            {% if subcontractor_form.kpp.errors %}<div class="text-danger">{{ subcontractor_form.kpp.errors }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="{{ subcontractor_form.ogrn.id_for_label }}" class="form-label">{{ subcontractor_form.ogrn.label }} <span class="text-danger">*</span></label>
+                                            {{ subcontractor_form.ogrn }}
+                                            {% if subcontractor_form.ogrn.errors %}<div class="text-danger">{{ subcontractor_form.ogrn.errors }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="{{ subcontractor_form.legal_address.id_for_label }}" class="form-label">{{ subcontractor_form.legal_address.label }} <span class="text-danger">*</span></label>
+                                            {{ subcontractor_form.legal_address }}
+                                            {% if subcontractor_form.legal_address.errors %}<div class="text-danger">{{ subcontractor_form.legal_address.errors }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="{{ subcontractor_form.actual_address.id_for_label }}" class="form-label">{{ subcontractor_form.actual_address.label }} <span class="text-danger">*</span></label>
+                                            {{ subcontractor_form.actual_address }}
+                                            {% if subcontractor_form.actual_address.errors %}<div class="text-danger">{{ subcontractor_form.actual_address.errors }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="{{ subcontractor_form.phone.id_for_label }}" class="form-label">{{ subcontractor_form.phone.label }} <span class="text-danger">*</span></label>
+                                            {{ subcontractor_form.phone }}
+                                            {% if subcontractor_form.phone.errors %}<div class="text-danger">{{ subcontractor_form.phone.errors }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="{{ subcontractor_form.email.id_for_label }}" class="form-label">{{ subcontractor_form.email.label }} <span class="text-danger">*</span></label>
+                                            {{ subcontractor_form.email }}
+                                            {% if subcontractor_form.email.errors %}<div class="text-danger">{{ subcontractor_form.email.errors }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="{{ subcontractor_form.director_name.id_for_label }}" class="form-label">{{ subcontractor_form.director_name.label }} <span class="text-danger">*</span></label>
+                                            {{ subcontractor_form.director_name }}
+                                            {% if subcontractor_form.director_name.errors %}<div class="text-danger">{{ subcontractor_form.director_name.errors }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="{{ subcontractor_form.bank_name.id_for_label }}" class="form-label">{{ subcontractor_form.bank_name.label }} <span class="text-danger">*</span></label>
+                                            {{ subcontractor_form.bank_name }}
+                                            {% if subcontractor_form.bank_name.errors %}<div class="text-danger">{{ subcontractor_form.bank_name.errors }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <label for="{{ subcontractor_form.bank_account.id_for_label }}" class="form-label">{{ subcontractor_form.bank_account.label }} <span class="text-danger">*</span></label>
+                                            {{ subcontractor_form.bank_account }}
+                                            {% if subcontractor_form.bank_account.errors %}<div class="text-danger">{{ subcontractor_form.bank_account.errors }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="{{ subcontractor_form.corr_account.id_for_label }}" class="form-label">{{ subcontractor_form.corr_account.label }} <span class="text-danger">*</span></label>
+                                            {{ subcontractor_form.corr_account }}
+                                            {% if subcontractor_form.corr_account.errors %}<div class="text-danger">{{ subcontractor_form.corr_account.errors }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="{{ subcontractor_form.bik.id_for_label }}" class="form-label">{{ subcontractor_form.bik.label }} <span class="text-danger">*</span></label>
+                                            {{ subcontractor_form.bik }}
+                                            {% if subcontractor_form.bik.errors %}<div class="text-danger">{{ subcontractor_form.bik.errors }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        {{ subcontractor_form.is_active }}
+                                        <label for="{{ subcontractor_form.is_active.id_for_label }}" class="form-check-label">{{ subcontractor_form.is_active.label }}</label>
+                                        {% if subcontractor_form.is_active.errors %}<div class="text-danger">{{ subcontractor_form.is_active.errors }}</div>{% endif %}
+                                    </div>
+                                    
+                                    <div class="mt-4">
+                                        <button type="submit" class="btn btn-success">Создать и добавить в проект</button>
+                                        <a href="?mode=new" class="btn btn-secondary">Назад</a>
+                                    </div>
+                                </form>
+                                <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const contractorTypeRadios = document.querySelectorAll('input[name="subcontractor-contractor_type"]');
+                                    const kppField = document.querySelector('#id_subcontractor-kpp');
+                                    function updateKppField() {
+                                        const selectedType = document.querySelector('input[name="subcontractor-contractor_type"]:checked')?.value;
+                                        if (selectedType === 'individual' && kppField) {
+                                            kppField.disabled = true;
+                                            kppField.value = '';
+                                        } else if (kppField) {
+                                            kppField.disabled = false;
+                                        }
+                                    }
+                                    contractorTypeRadios.forEach(radio => radio.addEventListener('change', updateKppField));
+                                    updateKppField();
+                                });
+                                </script>
+                            {% elif resource_type == 'equipment' %}
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="form_type" value="create_resource">
+                                    <input type="hidden" name="resource_type" value="equipment">
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="{{ equipment_form.name.id_for_label }}" class="form-label">{{ equipment_form.name.label }} <span class="text-danger">*</span></label>
+                                            {{ equipment_form.name }}
+                                            {% if equipment_form.name.errors %}<div class="text-danger">{{ equipment_form.name.errors }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="{{ equipment_form.acquisition_type.id_for_label }}" class="form-label">{{ equipment_form.acquisition_type.label }} <span class="text-danger">*</span></label>
+                                            {{ equipment_form.acquisition_type }}
+                                            {% if equipment_form.acquisition_type.errors %}<div class="text-danger">{{ equipment_form.acquisition_type.errors }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="{{ equipment_form.description.id_for_label }}" class="form-label">{{ equipment_form.description.label }}</label>
+                                        {{ equipment_form.description }}
+                                        {% if equipment_form.description.errors %}<div class="text-danger">{{ equipment_form.description.errors }}</div>{% endif %}
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <label for="{{ equipment_form.unit.id_for_label }}" class="form-label">{{ equipment_form.unit.label }} <span class="text-danger">*</span></label>
+                                            {{ equipment_form.unit }}
+                                            {% if equipment_form.unit.errors %}<div class="text-danger">{{ equipment_form.unit.errors }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="{{ equipment_form.service_cost_per_unit.id_for_label }}" class="form-label">{{ equipment_form.service_cost_per_unit.label }} <span class="text-danger">*</span></label>
+                                            {{ equipment_form.service_cost_per_unit }}
+                                            {% if equipment_form.service_cost_per_unit.errors %}<div class="text-danger">{{ equipment_form.service_cost_per_unit.errors }}</div>{% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="{{ equipment_form.operational_cost.id_for_label }}" class="form-label">{{ equipment_form.operational_cost.label }}</label>
+                                            {{ equipment_form.operational_cost }}
+                                            <small class="form-text text-muted">Только для арендованного оборудования</small>
+                                            {% if equipment_form.operational_cost.errors %}<div class="text-danger">{{ equipment_form.operational_cost.errors }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-4">
+                                        <button type="submit" class="btn btn-success">Создать и добавить в проект</button>
+                                        <a href="?mode=new" class="btn btn-secondary">Назад</a>
+                                    </div>
+                                </form>
+                                <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const acquisitionTypeSelect = document.getElementById('id_equipment-acquisition_type');
+                                    const operationalCostField = document.getElementById('id_equipment-operational_cost');
+                                    if (acquisitionTypeSelect && operationalCostField) {
+                                        function toggleOperationalCost() {
+                                            if (acquisitionTypeSelect.value === 'rent') {
+                                                operationalCostField.closest('.form-group').style.display = 'block';
+                                            } else {
+                                                operationalCostField.closest('.form-group').style.display = 'none';
+                                            }
+                                        }
+                                        acquisitionTypeSelect.addEventListener('change', toggleOperationalCost);
+                                        toggleOperationalCost();
+                                    }
+                                });
+                                </script>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Автоматическое обновление списка услуг при выборе исполнителя
+$(document).ready(function() {
+    $('#id_contractor').change(function() {
+        var contractorId = $(this).val();
+        if (contractorId) {
+            $.ajax({
+                url: '{% url "projects:get_services_for_contractor" 0 %}'.replace('0', contractorId),
+                success: function(data) {
+                    var serviceSelect = $('#id_service');
+                    serviceSelect.empty();
+                    serviceSelect.append('<option value="">-- Выберите услугу --</option>');
+                    $.each(data.services, function(index, service) {
+                        serviceSelect.append('<option value="' + service.id + '">' + service.name + '</option>');
+                    });
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

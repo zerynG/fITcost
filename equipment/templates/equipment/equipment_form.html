@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if object %}Редактирование{% else %}Добавление{% endif %} оборудования{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% if object %}Редактирование{% else %}Добавление{% endif %} оборудования</h3>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.name.label_tag }}
+                                    {{ form.name }}
+                                    {{ form.name.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.acquisition_type.label_tag }}
+                                    {{ form.acquisition_type }}
+                                    {{ form.acquisition_type.errors }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.description.label_tag }}
+                            {{ form.description }}
+                            {{ form.description.errors }}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ form.unit.label_tag }}
+                                    {{ form.unit }}
+                                    {{ form.unit.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ form.service_cost_per_unit.label_tag }}
+                                    {{ form.service_cost_per_unit }}
+                                    {{ form.service_cost_per_unit.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ form.operational_cost.label_tag }}
+                                    {{ form.operational_cost }}
+                                    {{ form.operational_cost.errors }}
+                                    <small class="form-text text-muted">Только для арендованного оборудования</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                        <a href="{% url 'equipment:list' %}" class="btn btn-default">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+$(document).ready(function() {
+    function toggleOperationalCost() {
+        var acquisitionType = $('#id_acquisition_type').val();
+        if (acquisitionType === 'rent') {
+            $('#id_operational_cost').closest('.form-group').show();
+        } else {
+            $('#id_operational_cost').closest('.form-group').hide();
+        }
+    }
+    
+    $('#id_acquisition_type').change(toggleOperationalCost);
+    toggleOperationalCost();
+});
+</script>
+{% endblock %}

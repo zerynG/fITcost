@@ -1,0 +1,152 @@
+{% extends 'base_with_sidebar.html' %}
+
+{% block title %}Реестр Заказчиков{% endblock %}
+
+{% block main_content %}
+<div class="container-fluid">
+    <!-- Кнопка Назад -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <a href="http://127.0.0.1:8000/home/" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Назад
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="card-title mb-0">Реестр Заказчиков</h3>  <!-- Добавил mb-0 -->
+                        <div>
+                            {% if project_id and workspace_id %}
+                                <a href="{% url 'customers:customer_create_project' workspace_id project_id %}" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Создать Заказчика
+                                </a>
+                            {% else %}
+                                <a href="{% url 'customers:customer_create' %}" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Создать Заказчика
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    {% if messages %}
+                    <div class="messages">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible">
+                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>ИНН</th>
+                                <th>Тип</th>
+                                <th>Название/ФИО</th>
+                                <th>Email</th>
+                                <th>Телефон</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for customer in customers %}
+                            <tr>
+                                <td>{{ customer.inn }}</td>
+                                <td>{{ customer.get_customer_type_display }}</td>
+                                <td>
+                                    {% if customer.customer_type == 'individual' %}
+                                        {{ customer.full_name }}
+                                    {% else %}
+                                        {{ customer.name }} ({{ customer.full_name }})
+                                    {% endif %}
+                                </td>
+                                <td>{{ customer.email }}</td>
+                                <td>{{ customer.phone }}</td>
+                                <td>
+                                    {% if project_id and workspace_id %}
+                                        <a href="{% url 'customers:customer_edit_project' workspace_id project_id customer.pk %}" 
+                                           class="btn btn-sm btn-warning" title="Редактировать">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'customers:customer_delete_project' workspace_id project_id customer.pk %}" 
+                                           class="btn btn-sm btn-danger" title="Удалить"
+                                           onclick="return confirm('Вы уверены, что хотите удалить этого заказчика?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    {% else %}
+                                        <a href="{% url 'customers:customer_edit' customer.pk %}" 
+                                           class="btn btn-sm btn-warning" title="Редактировать">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'customers:customer_delete' customer.pk %}" 
+                                           class="btn btn-sm btn-danger" title="Удалить"
+                                           onclick="return confirm('Вы уверены, что хотите удалить этого заказчика?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">Нет заказчиков</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                    {% if is_paginated %}
+                    <div class="pagination">
+                        <span class="page-links">
+                            {% if page_obj.has_previous %}
+                                <a href="?page={{ page_obj.previous_page_number }}">←</a>
+                            {% endif %}
+                            
+                            <span class="page-current">
+                                Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+                            </span>
+                            
+                            {% if page_obj.has_next %}
+                                <a href="?page={{ page_obj.next_page_number }}">→</a>
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleCompanyName() {
+    const customerType = document.getElementById('id_customer_type').value;
+    const companyNameField = document.getElementById('company-name-field');
+    const companyNameLabel = document.querySelector('label[for="id_name"]');
+    
+    if (customerType === 'individual') {
+        companyNameField.style.display = 'none';
+        companyNameLabel.style.display = 'none';
+        companyNameField.required = false;
+    } else {
+        companyNameField.style.display = 'block';
+        companyNameLabel.style.display = 'block';
+        companyNameField.required = true;
+    }
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    toggleCompanyName();
+});
+</script>
+{% endblock %}
