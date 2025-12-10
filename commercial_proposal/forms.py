@@ -8,14 +8,46 @@ class CommercialProposalForm(forms.ModelForm):
         fields = ['project', 'title', 'customer', 'technical_spec', 'total_cost',
                  'manager_position', 'manager_name', 'manager_email']
         widgets = {
-            'project': forms.HiddenInput(),  # Скрытое поле, устанавливается автоматически
-            'technical_spec': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
-            'title': forms.TextInput(attrs={'class': 'form-control'}),
-            'customer': forms.Select(attrs={'class': 'form-control'}),
-            'total_cost': forms.NumberInput(attrs={'class': 'form-control'}),
-            'manager_position': forms.TextInput(attrs={'class': 'form-control'}),
-            'manager_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'manager_email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'project': forms.HiddenInput(),
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Введите название коммерческого предложения'
+            }),
+            'customer': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'technical_spec': forms.Textarea(attrs={
+                'rows': 4,
+                'class': 'form-control',
+                'placeholder': 'Введите техническое задание'
+            }),
+            'total_cost': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0',
+                'placeholder': '0.00'
+            }),
+            'manager_position': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Введите должность менеджера'
+            }),
+            'manager_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Введите ФИО менеджера'
+            }),
+            'manager_email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'example@email.com'
+            }),
+        }
+        labels = {
+            'title': 'Название',
+            'customer': 'Заказчик',
+            'technical_spec': 'Техническое задание',
+            'total_cost': 'Общая стоимость',
+            'manager_position': 'Должность менеджера',
+            'manager_name': 'ФИО менеджера',
+            'manager_email': 'Email менеджера',
         }
 
 class ServiceItemForm(forms.ModelForm):
@@ -23,13 +55,48 @@ class ServiceItemForm(forms.ModelForm):
         model = ServiceItem
         fields = ['name', 'hours', 'start_date', 'end_date', 'cost', 'monthly_cost', 'is_indefinite']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'hours': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.5'}),
-            'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'cost': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'monthly_cost': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'is_indefinite': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Введите название услуги'
+            }),
+            'hours': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.5',
+                'min': '0',
+                'placeholder': '0.0'
+            }),
+            'start_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'end_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'cost': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0',
+                'placeholder': '0.00'
+            }),
+            'monthly_cost': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0',
+                'placeholder': '0.00'
+            }),
+            'is_indefinite': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+        }
+        labels = {
+            'name': 'Название услуги',
+            'hours': 'Часы',
+            'start_date': 'Дата начала',
+            'end_date': 'Дата окончания',
+            'cost': 'Стоимость',
+            'monthly_cost': 'Ежемесячная стоимость',
+            'is_indefinite': 'Бессрочно',
         }
 
     def __init__(self, *args, **kwargs):

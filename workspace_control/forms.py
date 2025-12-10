@@ -8,9 +8,17 @@ class WorkspaceForm(forms.ModelForm):
         model = Workspace
         fields = ['name', 'subdomain', 'admin']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'subdomain': forms.TextInput(attrs={'class': 'form-control'}),
-            'admin': forms.Select(attrs={'class': 'form-control'}),
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Введите название рабочей области'
+            }),
+            'subdomain': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Введите поддомен'
+            }),
+            'admin': forms.Select(attrs={
+                'class': 'form-select'
+            }),
         }
         labels = {
             'name': 'Название рабочей области',
@@ -28,7 +36,7 @@ class WorkspaceForm(forms.ModelForm):
 class WorkspaceMemberForm(forms.ModelForm):
     user = forms.ModelChoiceField(
         queryset=User.objects.all(),
-        widget=forms.Select(attrs={'class': 'form-control'}),
+        widget=forms.Select(attrs={'class': 'form-select'}),
         label='Пользователь'
     )
 
@@ -36,7 +44,7 @@ class WorkspaceMemberForm(forms.ModelForm):
         model = WorkspaceMember
         fields = ['user', 'permission']
         widgets = {
-            'permission': forms.Select(attrs={'class': 'form-control'}),
+            'permission': forms.Select(attrs={'class': 'form-select'}),
         }
         labels = {
             'permission': 'Права доступа',

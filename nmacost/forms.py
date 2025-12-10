@@ -24,17 +24,18 @@ class ResourceItemForm(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Наименование ресурса'
+                'placeholder': 'Введите наименование ресурса'
             }),
             'description': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 3,
-                'placeholder': 'Описание ресурса'
+                'placeholder': 'Введите описание ресурса'
             }),
             'quantity': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'step': '0.01',
-                'min': '0.01'
+                'min': '0.01',
+                'placeholder': '0.00'
             }),
             'unit': forms.TextInput(attrs={
                 'class': 'form-control',

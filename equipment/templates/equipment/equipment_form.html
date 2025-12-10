@@ -1,91 +1,96 @@
-{% extends 'base.html' %}
+{% extends 'base_form.html' %}
 {% load static %}
 
-{% block title %}{% if object %}Редактирование{% else %}Добавление{% endif %} оборудования{% endblock %}
+{% block title %}{% if form.instance.pk %}Редактирование{% else %}Добавление{% endif %} оборудования{% endblock %}
 
-{% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">{% if object %}Редактирование{% else %}Добавление{% endif %} оборудования</h3>
-                </div>
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    {{ form.name.label_tag }}
-                                    {{ form.name }}
-                                    {{ form.name.errors }}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    {{ form.acquisition_type.label_tag }}
-                                    {{ form.acquisition_type }}
-                                    {{ form.acquisition_type.errors }}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            {{ form.description.label_tag }}
-                            {{ form.description }}
-                            {{ form.description.errors }}
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    {{ form.unit.label_tag }}
-                                    {{ form.unit }}
-                                    {{ form.unit.errors }}
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    {{ form.service_cost_per_unit.label_tag }}
-                                    {{ form.service_cost_per_unit }}
-                                    {{ form.service_cost_per_unit.errors }}
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    {{ form.operational_cost.label_tag }}
-                                    {{ form.operational_cost }}
-                                    {{ form.operational_cost.errors }}
-                                    <small class="form-text text-muted">Только для арендованного оборудования</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <button type="submit" class="btn btn-primary">Сохранить</button>
-                        <a href="{% url 'equipment:list' %}" class="btn btn-default">Отмена</a>
-                    </div>
-                </form>
-            </div>
+{% block form_title %}{% if form.instance.pk %}Редактирование оборудования{% else %}Добавление оборудования{% endif %}{% endblock %}
+
+{% block form_fields %}
+    {{ form.project }}
+    
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="{{ form.name.id_for_label }}" class="form-label">{{ form.name.label }}</label>
+            {{ form.name }}
+            {% if form.name.errors %}
+                <div class="invalid-feedback d-block">{{ form.name.errors }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <label for="{{ form.acquisition_type.id_for_label }}" class="form-label">{{ form.acquisition_type.label }}</label>
+            {{ form.acquisition_type }}
+            {% if form.acquisition_type.errors %}
+                <div class="invalid-feedback d-block">{{ form.acquisition_type.errors }}</div>
+            {% endif %}
         </div>
     </div>
-</div>
+    
+    <div class="mb-3">
+        <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+        {{ form.description }}
+        {% if form.description.errors %}
+            <div class="invalid-feedback d-block">{{ form.description.errors }}</div>
+        {% endif %}
+    </div>
+    
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label for="{{ form.unit.id_for_label }}" class="form-label">{{ form.unit.label }}</label>
+            {{ form.unit }}
+            {% if form.unit.errors %}
+                <div class="invalid-feedback d-block">{{ form.unit.errors }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-4">
+            <label for="{{ form.service_cost_per_unit.id_for_label }}" class="form-label">{{ form.service_cost_per_unit.label }}</label>
+            {{ form.service_cost_per_unit }}
+            {% if form.service_cost_per_unit.errors %}
+                <div class="invalid-feedback d-block">{{ form.service_cost_per_unit.errors }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-4" id="operational-cost-group">
+            <label for="{{ form.operational_cost.id_for_label }}" class="form-label">{{ form.operational_cost.label }}</label>
+            {{ form.operational_cost }}
+            <small class="form-text text-muted">Только для арендованного оборудования</small>
+            {% if form.operational_cost.errors %}
+                <div class="invalid-feedback d-block">{{ form.operational_cost.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="form-check mb-3">
+        {{ form.can_be_shared }}
+        <label class="form-check-label" for="{{ form.can_be_shared.id_for_label }}">
+            {{ form.can_be_shared.label }}
+        </label>
+        {% if form.can_be_shared.errors %}
+            <div class="invalid-feedback d-block">{{ form.can_be_shared.errors }}</div>
+        {% endif %}
+    </div>
 {% endblock %}
 
-{% block javascript %}
+{% block cancel_url %}
+    {% if project_id and workspace_id %}
+        {% url 'equipment:list_project' workspace_id project_id %}
+    {% else %}
+        {% url 'equipment:list' %}
+    {% endif %}
+{% endblock %}
+
+{% block extra_js %}
 <script>
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', function() {
     function toggleOperationalCost() {
-        var acquisitionType = $('#id_acquisition_type').val();
+        var acquisitionType = document.getElementById('id_acquisition_type').value;
+        var operationalCostGroup = document.getElementById('operational-cost-group');
         if (acquisitionType === 'rent') {
-            $('#id_operational_cost').closest('.form-group').show();
+            operationalCostGroup.style.display = 'block';
         } else {
-            $('#id_operational_cost').closest('.form-group').hide();
+            operationalCostGroup.style.display = 'none';
         }
     }
     
-    $('#id_acquisition_type').change(toggleOperationalCost);
+    document.getElementById('id_acquisition_type').addEventListener('change', toggleOperationalCost);
     toggleOperationalCost();
 });
 </script>

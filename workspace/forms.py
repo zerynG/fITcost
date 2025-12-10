@@ -9,10 +9,22 @@ class WorkspaceForm(forms.ModelForm):
         model = Workspace
         fields = ['name', 'subdomain', 'admin', 'description']
         widgets = {
-            'name': forms.TextInput(),
-            'subdomain': forms.TextInput(),
-            'admin': forms.Select(),
-            'description': forms.Textarea(attrs={'rows': 4}),
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Введите название рабочей области'
+            }),
+            'subdomain': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Введите поддомен'
+            }),
+            'admin': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'description': forms.Textarea(attrs={
+                'rows': 4,
+                'class': 'form-control',
+                'placeholder': 'Введите описание'
+            }),
         }
         labels = {
             'name': 'Название рабочей области',
@@ -33,10 +45,40 @@ class ProjectForm(forms.ModelForm):
         model = Project
         fields = ['name', 'description', 'status', 'deadline', 'start_date', 'end_date', 'customer', 'tax_rate']
         widgets = {
-            'deadline': forms.DateInput(attrs={'type': 'date'}),
-            'start_date': forms.DateInput(attrs={'type': 'date'}),
-            'end_date': forms.DateInput(attrs={'type': 'date'}),
-            'description': forms.Textarea(attrs={'rows': 4}),
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Введите название проекта'
+            }),
+            'description': forms.Textarea(attrs={
+                'rows': 4,
+                'class': 'form-control',
+                'placeholder': 'Введите описание проекта'
+            }),
+            'status': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'deadline': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-control'
+            }),
+            'start_date': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-control'
+            }),
+            'end_date': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-control'
+            }),
+            'customer': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'tax_rate': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0',
+                'max': '100',
+                'placeholder': '0.00'
+            }),
         }
         labels = {
             'name': 'Название проекта',

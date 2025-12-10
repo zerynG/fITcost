@@ -44,7 +44,10 @@ class CustomUserCreationForm(UserCreationForm):
         # Добавляем классы Bootstrap к полям
         for field_name in self.fields:
             if field_name not in ['roles']:
-                self.fields[field_name].widget.attrs.update({'class': 'form-control'})
+                if isinstance(self.fields[field_name].widget, forms.Select):
+                    self.fields[field_name].widget.attrs.update({'class': 'form-select'})
+                else:
+                    self.fields[field_name].widget.attrs.update({'class': 'form-control'})
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -90,7 +93,10 @@ class CustomUserChangeForm(forms.ModelForm):
         # Добавляем классы Bootstrap к полям
         for field_name in self.fields:
             if field_name not in ['roles', 'is_active']:
-                self.fields[field_name].widget.attrs.update({'class': 'form-control'})
+                if isinstance(self.fields[field_name].widget, forms.Select):
+                    self.fields[field_name].widget.attrs.update({'class': 'form-select'})
+                else:
+                    self.fields[field_name].widget.attrs.update({'class': 'form-control'})
 
         # Устанавливаем начальные значения
         if self.instance.pk:

@@ -10,13 +10,51 @@ class ContractorForm(forms.ModelForm):
             'default_unit', 'default_rate', 'can_be_shared'
         ]
         widgets = {
-            'project': forms.HiddenInput(),  # Скрытое поле, устанавливается автоматически
+            'project': forms.HiddenInput(),
+            'last_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Введите фамилию'
+            }),
+            'first_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Введите имя'
+            }),
+            'middle_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Введите отчество (необязательно)'
+            }),
+            'contract_type': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'tax_rate': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0',
+                'max': '100',
+                'placeholder': '0.00'
+            }),
+            'default_unit': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'default_rate': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0',
+                'placeholder': '0.00'
+            }),
+            'can_be_shared': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
         }
-        widgets = {
-            'contract_type': forms.Select(choices=Contractor.CONTRACTOR_TYPE_CHOICES),
-            'tax_rate': forms.NumberInput(attrs={'step': '0.01', 'min': '0', 'max': '100'}),
-            'default_unit': forms.Select(choices=Contractor.UNIT_CHOICES),
-            'default_rate': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
+        labels = {
+            'last_name': 'Фамилия',
+            'first_name': 'Имя',
+            'middle_name': 'Отчество',
+            'contract_type': 'Тип оформления',
+            'tax_rate': 'Налоговая ставка (%)',
+            'default_unit': 'Единица измерения по умолчанию',
+            'default_rate': 'Ставка по умолчанию',
+            'can_be_shared': 'Можно использовать в других проектах',
         }
     
     def __init__(self, *args, **kwargs):

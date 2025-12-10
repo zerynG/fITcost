@@ -1,83 +1,103 @@
-{% extends 'base.html' %}
+{% extends 'base_form.html' %}
 
-{% block title %}{% if object %}Редактировать{% else %}Создать{% endif %} Заказчика{% endblock %}
+{% block title %}{% if form.instance.pk %}Редактировать{% else %}Создать{% endif %} Заказчика{% endblock %}
 
-{% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        {% if object %}Редактировать{% else %}Создать{% endif %} Заказчика
-                    </h3>
-                </div>
-                
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    {{ form.inn.label_tag }}
-                                    {{ form.inn }}
-                                    {{ form.inn.errors }}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    {{ form.customer_type.label_tag }}
-                                    {{ form.customer_type }}
-                                    {{ form.customer_type.errors }}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    {{ form.name.label_tag }}
-                                    {{ form.name }}
-                                    {{ form.name.errors }}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    {{ form.full_name.label_tag }}
-                                    {{ form.full_name }}
-                                    {{ form.full_name.errors }}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    {{ form.email.label_tag }}
-                                    {{ form.email }}
-                                    {{ form.email.errors }}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    {{ form.phone.label_tag }}
-                                    {{ form.phone }}
-                                    {{ form.phone.errors }}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-success">
-                                {% if object %}Сохранить{% else %}Создать{% endif %}
-                            </button>
-                            <a href="{% url 'customers:customer_list' %}" class="btn btn-default">Отмена</a>
-                        </div>
-                    </form>
-                </div>
-            </div>
+{% block form_title %}{% if form.instance.pk %}Редактирование заказчика{% else %}Создание заказчика{% endif %}{% endblock %}
+
+{% block form_fields %}
+    {{ form.project }}
+    
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="{{ form.inn.id_for_label }}" class="form-label">{{ form.inn.label }}</label>
+            {{ form.inn }}
+            {% if form.inn.errors %}
+                <div class="invalid-feedback d-block">{{ form.inn.errors }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <label for="{{ form.customer_type.id_for_label }}" class="form-label">{{ form.customer_type.label }}</label>
+            {{ form.customer_type }}
+            {% if form.customer_type.errors %}
+                <div class="invalid-feedback d-block">{{ form.customer_type.errors }}</div>
+            {% endif %}
         </div>
     </div>
-</div>
+    
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="{{ form.name.id_for_label }}" class="form-label">{{ form.name.label }}</label>
+            {{ form.name }}
+            {% if form.name.errors %}
+                <div class="invalid-feedback d-block">{{ form.name.errors }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <label for="{{ form.full_name.id_for_label }}" class="form-label">{{ form.full_name.label }}</label>
+            {{ form.full_name }}
+            {% if form.full_name.errors %}
+                <div class="invalid-feedback d-block">{{ form.full_name.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+                <div class="invalid-feedback d-block">{{ form.email.errors }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <label for="{{ form.phone.id_for_label }}" class="form-label">{{ form.phone.label }}</label>
+            {{ form.phone }}
+            {% if form.phone.errors %}
+                <div class="invalid-feedback d-block">{{ form.phone.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="form-check mb-3">
+        {{ form.can_be_shared }}
+        <label class="form-check-label" for="{{ form.can_be_shared.id_for_label }}">
+            {{ form.can_be_shared.label }}
+        </label>
+        {% if form.can_be_shared.errors %}
+            <div class="invalid-feedback d-block">{{ form.can_be_shared.errors }}</div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block cancel_url %}
+    {% if project_id and workspace_id %}
+        {% url 'customers:customer_list_project' workspace_id project_id %}
+    {% else %}
+        {% url 'customers:customer_list' %}
+    {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleCompanyName() {
+    const customerType = document.getElementById('id_customer_type').value;
+    const companyNameField = document.getElementById('company-name-field');
+    const companyNameLabel = document.querySelector('label[for="id_name"]');
+    
+    if (customerType === 'individual') {
+        companyNameField.style.display = 'none';
+        if (companyNameLabel) companyNameLabel.style.display = 'none';
+        companyNameField.required = false;
+    } else {
+        companyNameField.style.display = 'block';
+        if (companyNameLabel) companyNameLabel.style.display = 'block';
+        companyNameField.required = true;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    toggleCompanyName();
+    document.getElementById('id_customer_type').addEventListener('change', toggleCompanyName);
+});
+</script>
 {% endblock %}

@@ -16,7 +16,7 @@ class EmployeeForm(forms.ModelForm):
             'is_active'
         ]
         widgets = {
-            'project': forms.HiddenInput(),  # Скрытое поле, устанавливается автоматически
+            'project': forms.HiddenInput(),
             'last_name': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Введите фамилию'
@@ -36,10 +36,14 @@ class EmployeeForm(forms.ModelForm):
             'salary': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'step': '0.01',
+                'min': '0',
                 'placeholder': '0.00'
             }),
             'tax_rate': forms.Select(attrs={
-                'class': 'form-control'
+                'class': 'form-select'
+            }),
+            'can_be_shared': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
             }),
             'is_active': forms.CheckboxInput(attrs={
                 'class': 'form-check-input'
@@ -52,6 +56,7 @@ class EmployeeForm(forms.ModelForm):
             'position': 'Должность',
             'salary': 'Заработная плата (в месяц)',
             'tax_rate': 'Налоговая ставка',
+            'can_be_shared': 'Можно использовать в других проектах',
             'is_active': 'Активный сотрудник',
         }
 
