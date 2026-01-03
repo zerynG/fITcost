@@ -19,6 +19,12 @@
                 <div class="card-body">
                     <form method="post" id="calculation-form">
                         {% csrf_token %}
+                        {% if project_id %}
+                            <input type="hidden" name="project_id" value="{{ project_id }}">
+                        {% endif %}
+                        {% if workspace_id %}
+                            <input type="hidden" name="workspace_id" value="{{ workspace_id }}">
+                        {% endif %}
                         
                         <!-- Общие ошибки формы -->
                         {% if form.non_field_errors %}

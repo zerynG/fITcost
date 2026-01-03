@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.conf import settings
 from django import forms
+from django.db.models import Q
 from .models import CommercialProposal
 from .forms import CommercialProposalForm, ServiceItemFormSet
 from openpyxl import Workbook
@@ -56,13 +57,23 @@ def proposal_list(request, workspace_id=None, project_id=None):
 @login_required
 def create_proposal(request, workspace_id=None, project_id=None):
     from workspace.models import Project
+    from customers.models import Customer
     
-    project = None
-    if project_id:
-        project = Project.objects.filter(id=project_id).first()
+    project = Project.objects.filter(id=project_id).first() if project_id else None
+
+    def filter_customers(form_obj):
+        if project:
+            qs = Customer.objects.filter(
+                Q(project=project) | Q(can_be_shared=True, project__workspace=getattr(project, "workspace", None))
+            ).distinct()
+        else:
+            qs = Customer.objects.none()
+        if "customer" in form_obj.fields:
+            form_obj.fields["customer"].queryset = qs
     
     if request.method == 'POST':
         form = CommercialProposalForm(request.POST)
+        filter_customers(form)
         formset = ServiceItemFormSet(request.POST)
 
         if form.is_valid() and formset.is_valid():
@@ -73,13 +84,14 @@ def create_proposal(request, workspace_id=None, project_id=None):
             formset.instance = proposal
             formset.save()
             if project_id:
-                return redirect('workspace:project_detail', workspace_id=workspace_id, project_id=project_id)
+                return redirect('commercial_proposal:proposal_list_project', workspace_id=workspace_id, project_id=project_id)
             return redirect('commercial_proposal:proposal_detail', pk=proposal.pk)
     else:
         form = CommercialProposalForm()
         if project:
             form.fields['project'].initial = project
             form.fields['project'].widget = forms.HiddenInput()
+        filter_customers(form)
         formset = ServiceItemFormSet()
 
     context = {

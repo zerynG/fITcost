@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import IntegrityError
-from django.db.models import Count, Sum
+from django.db.models import Count, Sum, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
@@ -21,6 +21,8 @@ from .models import CostCalculation, OrganizationSettings, RoleAssignment
 try:
     from nmacost.forms import NMACostForm, ResourceItemForm
     from commercial_proposal.forms import CommercialProposalForm, ServiceItemFormSet
+    from nmacost.models import NMACost
+    from commercial_proposal.models import CommercialProposal
     HAS_NMA = True
     HAS_COMMERCIAL = True
 except ImportError:
@@ -41,6 +43,8 @@ class CostDashboardView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["workspace_id"] = self.request.GET.get("workspace_id")
+        context["project_id"] = self.request.GET.get("project_id")
         qs = self.get_queryset()
         aggregates = qs.aggregate(
             development_total=Sum("development_cost"),
@@ -68,21 +72,66 @@ class CostDashboardView(LoginRequiredMixin, ListView):
 class CostCalculationCreateView(LoginRequiredMixin, TemplateView):
     template_name = "itcost/cost_calculation_form.html"
     form_class = CostCalculationForm
+    project_id = None
+    workspace_id = None
+
+    def _filter_related(self, form):
+        """Оставляем в выпадающих списках только данные текущего проекта."""
+        project_id = self.project_id
+        if project_id:
+            if HAS_NMA and "existing_nma" in form.fields:
+                form.fields["existing_nma"].queryset = (
+                    NMACost.objects.filter(project_id=project_id).order_by("-created_at")
+                )
+            if HAS_COMMERCIAL and "existing_commercial" in form.fields:
+                form.fields["existing_commercial"].queryset = (
+                    CommercialProposal.objects.filter(project_id=project_id).order_by("-creation_date")
+                )
+        else:
+            # Если проект не передан, не показываем список (во избежание глобального списка)
+            if HAS_NMA and "existing_nma" in form.fields:
+                form.fields["existing_nma"].queryset = NMACost.objects.none()
+            if HAS_COMMERCIAL and "existing_commercial" in form.fields:
+                form.fields["existing_commercial"].queryset = CommercialProposal.objects.none()
+
+    def _filter_customer(self, commercial_form):
+        if HAS_COMMERCIAL and commercial_form and self.project_id and "customer" in commercial_form.fields:
+            from customers.models import Customer
+            from workspace.models import Project as WorkspaceProject
+            workspace_id = WorkspaceProject.objects.filter(id=self.project_id).values_list("workspace_id", flat=True).first()
+            qs = Customer.objects.filter(Q(project_id=self.project_id))
+            if workspace_id:
+                qs = qs | Customer.objects.filter(can_be_shared=True, project__workspace_id=workspace_id)
+            commercial_form.fields["customer"].queryset = qs.distinct()
 
     def get(self, request, *args, **kwargs):
+        self.project_id = request.GET.get("project_id")
+        self.workspace_id = request.GET.get("workspace_id")
         form = self.form_class()
+        self._filter_related(form)
         context = {"form": form}
         
         # Добавляем формы для создания НМА и коммерческого предложения
         if HAS_NMA:
-            context["nma_form"] = NMACostForm()
+            nma_form = NMACostForm()
+            if self.project_id and "project" in nma_form.fields:
+                nma_form.fields["project"].initial = self.project_id
+            context["nma_form"] = nma_form
         if HAS_COMMERCIAL:
-            context["commercial_form"] = CommercialProposalForm()
+            commercial_form = CommercialProposalForm()
+            if self.project_id and "project" in commercial_form.fields:
+                commercial_form.fields["project"].initial = self.project_id
+            self._filter_customer(commercial_form)
+            context["commercial_form"] = commercial_form
             context["service_formset"] = ServiceItemFormSet()
+        context["project_id"] = self.project_id
+        context["workspace_id"] = self.workspace_id
         
         return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
+        self.project_id = request.POST.get("project_id") or request.GET.get("project_id")
+        self.workspace_id = request.POST.get("workspace_id") or request.GET.get("workspace_id")
         # Создаем копию данных для модификации (copy() создает мутабельную копию QueryDict)
         form_data = request.POST.copy()
         context = {}
@@ -136,6 +185,7 @@ class CostCalculationCreateView(LoginRequiredMixin, TemplateView):
         if HAS_COMMERCIAL and form_data.get("commercial_source") == "new":
             commercial_form = CommercialProposalForm(request.POST)
             service_formset = ServiceItemFormSet(request.POST)
+            self._filter_customer(commercial_form)
             context["commercial_form"] = commercial_form
             context["service_formset"] = service_formset
             if commercial_form.is_valid() and service_formset.is_valid():
@@ -180,6 +230,7 @@ class CostCalculationCreateView(LoginRequiredMixin, TemplateView):
         # Создаем форму с обновленными данными
         # QueryDict уже обработан выше, пустые значения установлены
         form = self.form_class(form_data)
+        self._filter_related(form)
         context["form"] = form
         
         if form.is_valid():
@@ -194,10 +245,18 @@ class CostCalculationCreateView(LoginRequiredMixin, TemplateView):
         
         # Если основная форма невалидна, добавляем пустые формы для отображения
         if HAS_NMA and "nma_form" not in context:
-            context["nma_form"] = NMACostForm()
+            nma_form = NMACostForm()
+            if self.project_id and "project" in nma_form.fields:
+                nma_form.fields["project"].initial = self.project_id
+            context["nma_form"] = nma_form
         if HAS_COMMERCIAL and "commercial_form" not in context:
-            context["commercial_form"] = CommercialProposalForm()
+            commercial_form = CommercialProposalForm()
+            if self.project_id and "project" in commercial_form.fields:
+                commercial_form.fields["project"].initial = self.project_id
+            context["commercial_form"] = commercial_form
             context["service_formset"] = ServiceItemFormSet()
+        context["project_id"] = self.project_id
+        context["workspace_id"] = self.workspace_id
         
         # Добавляем сообщение об ошибках валидации с детальной информацией
         if form.errors:
@@ -232,34 +291,86 @@ class CostCalculationDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["components"] = self.object.calculate_components()
+        # Передаем идентификаторы для сайдбара
+        project_id = None
+        workspace_id = None
+        if self.object.nma_cost and self.object.nma_cost.project:
+            project_id = self.object.nma_cost.project_id
+            workspace_id = getattr(self.object.nma_cost.project, "workspace_id", None)
+        elif self.object.commercial_proposal and self.object.commercial_proposal.project:
+            project_id = self.object.commercial_proposal.project_id
+            workspace_id = getattr(self.object.commercial_proposal.project, "workspace_id", None)
+        # Переопределяем при наличии GET-параметров
+        project_id = self.request.GET.get("project_id") or project_id
+        workspace_id = self.request.GET.get("workspace_id") or workspace_id
+        context["project_id"] = project_id
+        context["workspace_id"] = workspace_id
         return context
 
 
 class CostCalculationUpdateView(LoginRequiredMixin, TemplateView):
     template_name = "itcost/cost_calculation_form.html"
     form_class = CostCalculationForm
+    project_id = None
+    workspace_id = None
 
     def get_object(self):
         return CostCalculation.objects.get(pk=self.kwargs["pk"])
 
+    def _filter_related(self, form):
+        if self.project_id:
+            if HAS_NMA and "existing_nma" in form.fields:
+                form.fields["existing_nma"].queryset = (
+                    NMACost.objects.filter(project_id=self.project_id).order_by("-created_at")
+                )
+            if HAS_COMMERCIAL and "existing_commercial" in form.fields:
+                form.fields["existing_commercial"].queryset = (
+                    CommercialProposal.objects.filter(project_id=self.project_id).order_by("-creation_date")
+                )
+        else:
+            if HAS_NMA and "existing_nma" in form.fields:
+                form.fields["existing_nma"].queryset = NMACost.objects.none()
+            if HAS_COMMERCIAL and "existing_commercial" in form.fields:
+                form.fields["existing_commercial"].queryset = CommercialProposal.objects.none()
+
     def get(self, request, *args, **kwargs):
         calculation = self.get_object()
+        # пытаемся определить проект из расчета или параметров запроса
+        self.project_id = request.GET.get("project_id") or (
+            calculation.nma_cost.project_id if calculation.nma_cost else
+            calculation.commercial_proposal.project_id if calculation.commercial_proposal else None
+        )
+        self.workspace_id = request.GET.get("workspace_id")
         form = self.form_class(instance=calculation)
-        context = {"form": form, "calculation": calculation}
+        self._filter_related(form)
+        context = {"form": form, "calculation": calculation, "project_id": self.project_id, "workspace_id": self.workspace_id}
         
         # Добавляем формы для создания НМА и коммерческого предложения
         if HAS_NMA:
-            context["nma_form"] = NMACostForm()
+            nma_form = NMACostForm()
+            if self.project_id and "project" in nma_form.fields:
+                nma_form.fields["project"].initial = self.project_id
+            context["nma_form"] = nma_form
         if HAS_COMMERCIAL:
-            context["commercial_form"] = CommercialProposalForm()
+            commercial_form = CommercialProposalForm()
+            if self.project_id and "project" in commercial_form.fields:
+                commercial_form.fields["project"].initial = self.project_id
+            self._filter_customer(commercial_form)
+            context["commercial_form"] = commercial_form
             context["service_formset"] = ServiceItemFormSet()
         
         return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
         calculation = self.get_object()
+        self.project_id = request.POST.get("project_id") or request.GET.get("project_id") or (
+            calculation.nma_cost.project_id if calculation.nma_cost else
+            calculation.commercial_proposal.project_id if calculation.commercial_proposal else None
+        )
+        self.workspace_id = request.POST.get("workspace_id") or request.GET.get("workspace_id")
         form = self.form_class(request.POST, instance=calculation)
-        context = {"form": form, "calculation": calculation}
+        self._filter_related(form)
+        context = {"form": form, "calculation": calculation, "project_id": self.project_id, "workspace_id": self.workspace_id}
         
         # Обработка создания новой формы НМА
         nma_cost = None
@@ -288,6 +399,7 @@ class CostCalculationUpdateView(LoginRequiredMixin, TemplateView):
         if HAS_COMMERCIAL and form.data.get("commercial_source") == "new":
             commercial_form = CommercialProposalForm(request.POST)
             service_formset = ServiceItemFormSet(request.POST)
+            self._filter_customer(commercial_form)
             context["commercial_form"] = commercial_form
             context["service_formset"] = service_formset
             if commercial_form.is_valid() and service_formset.is_valid():
@@ -408,7 +520,15 @@ class CostCalculationDeleteView(LoginRequiredMixin, TemplateView):
     
     def get(self, request, *args, **kwargs):
         calculation = self.get_object()
-        return self.render_to_response({"calculation": calculation})
+        project_id = request.GET.get("project_id")
+        workspace_id = request.GET.get("workspace_id")
+        if calculation.nma_cost and calculation.nma_cost.project:
+            project_id = project_id or calculation.nma_cost.project_id
+            workspace_id = workspace_id or getattr(calculation.nma_cost.project, "workspace_id", None)
+        if calculation.commercial_proposal and calculation.commercial_proposal.project:
+            project_id = project_id or calculation.commercial_proposal.project_id
+            workspace_id = workspace_id or getattr(calculation.commercial_proposal.project, "workspace_id", None)
+        return self.render_to_response({"calculation": calculation, "project_id": project_id, "workspace_id": workspace_id})
     
     def post(self, request, *args, **kwargs):
         calculation = self.get_object()

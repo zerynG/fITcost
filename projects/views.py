@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
+from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 
@@ -170,16 +171,32 @@ def manage_resources(request, project_pk):
     else:
         resources = project.projectresource_set.all()
     
-    # Получаем все ресурсы из реестров
+    # Получаем все ресурсы из реестров (ограничиваем проектом/воркспейсом)
     from employees.models import Employee
     from contractors.models import Contractor
     from subcontractors.models import Subcontractor
     from equipment.models import Equipment
     
-    employees = Employee.objects.filter(is_active=True)
-    contractors = Contractor.objects.all()
-    subcontractors = Subcontractor.objects.filter(is_active=True)
-    equipment_list = Equipment.objects.filter(is_active=True)
+    ws = project.workspace if hasattr(project, 'workspace') and project.workspace else None
+
+    employees = Employee.objects.filter(
+        Q(project=project) | Q(can_be_shared=True, project__workspace=ws),
+        is_active=True
+    ).distinct()
+
+    contractors = Contractor.objects.filter(
+        Q(project=project) | Q(can_be_shared=True, project__workspace=ws)
+    ).distinct()
+
+    subcontractors = Subcontractor.objects.filter(
+        Q(project=project) | Q(can_be_shared=True, project__workspace=ws),
+        is_active=True
+    ).distinct()
+
+    equipment_list = Equipment.objects.filter(
+        Q(project=project) | Q(can_be_shared=True, project__workspace=ws),
+        is_active=True
+    ).distinct()
 
     # Получаем workspace_id и project_id для сайдбара
     workspace_id = project.workspace.id if hasattr(project, 'workspace') and project.workspace else None
