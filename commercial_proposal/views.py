@@ -104,18 +104,96 @@ def create_proposal(request, workspace_id=None, project_id=None):
     return render(request, 'commercial_proposal/create.html', context)
 
 
-def proposal_detail(request, pk):
+def proposal_detail(request, pk, workspace_id=None, project_id=None):
     proposal = get_object_or_404(CommercialProposal, pk=pk)
-    return render(request, 'commercial_proposal/detail.html', {'proposal': proposal})
+    # Если project_id не передан, пытаемся получить из proposal
+    if not project_id and proposal.project:
+        project_id = proposal.project.id
+        if proposal.project.workspace:
+            workspace_id = proposal.project.workspace.id
+    return render(request, 'commercial_proposal/detail.html', {
+        'proposal': proposal,
+        'project_id': project_id,
+        'workspace_id': workspace_id,
+    })
 
 
-def delete_proposal(request, pk):
+@login_required
+def edit_proposal(request, pk, workspace_id=None, project_id=None):
+    """Редактирование коммерческого предложения"""
+    from workspace.models import Project
+    from customers.models import Customer
+    
+    proposal = get_object_or_404(CommercialProposal, pk=pk)
+    # Если project_id не передан, пытаемся получить из proposal
+    if not project_id and proposal.project:
+        project_id = proposal.project.id
+        if proposal.project.workspace:
+            workspace_id = proposal.project.workspace.id
+    
+    project = Project.objects.filter(id=project_id).first() if project_id else None
+
+    def filter_customers(form_obj):
+        if project:
+            qs = Customer.objects.filter(
+                Q(project=project) | Q(can_be_shared=True, project__workspace=getattr(project, "workspace", None))
+            ).distinct()
+        else:
+            qs = Customer.objects.all()
+        if "customer" in form_obj.fields:
+            form_obj.fields["customer"].queryset = qs
+    
+    if request.method == 'POST':
+        form = CommercialProposalForm(request.POST, instance=proposal)
+        filter_customers(form)
+        formset = ServiceItemFormSet(request.POST, instance=proposal)
+
+        if form.is_valid() and formset.is_valid():
+            proposal = form.save(commit=False)
+            if project:
+                proposal.project = project
+            proposal.save()
+            formset.save()
+            if project_id and workspace_id:
+                return redirect('commercial_proposal:proposal_detail_project', workspace_id=workspace_id, project_id=project_id, pk=proposal.pk)
+            return redirect('commercial_proposal:proposal_detail', pk=proposal.pk)
+    else:
+        form = CommercialProposalForm(instance=proposal)
+        if project:
+            form.fields['project'].initial = project
+            form.fields['project'].widget = forms.HiddenInput()
+        filter_customers(form)
+        formset = ServiceItemFormSet(instance=proposal)
+
+    context = {
+        'form': form,
+        'formset': formset,
+        'proposal': proposal,
+        'project_id': project_id,
+        'workspace_id': workspace_id,
+        'project': project,
+    }
+    return render(request, 'commercial_proposal/create.html', context)
+
+
+def delete_proposal(request, pk, workspace_id=None, project_id=None):
     """Удаление коммерческого предложения с подтверждением."""
     proposal = get_object_or_404(CommercialProposal, pk=pk)
+    # Если project_id не передан, пытаемся получить из proposal
+    if not project_id and proposal.project:
+        project_id = proposal.project.id
+        if proposal.project.workspace:
+            workspace_id = proposal.project.workspace.id
     if request.method == "POST":
         proposal.delete()
+        if project_id and workspace_id:
+            return redirect('commercial_proposal:proposal_list_project', workspace_id=workspace_id, project_id=project_id)
         return redirect('commercial_proposal:proposal_list')
-    return render(request, 'commercial_proposal/confirm_delete.html', {'proposal': proposal})
+    return render(request, 'commercial_proposal/confirm_delete.html', {
+        'proposal': proposal,
+        'project_id': project_id,
+        'workspace_id': workspace_id,
+    })
 
 
 def download_pdf(request, pk):

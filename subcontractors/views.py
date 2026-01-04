@@ -147,7 +147,11 @@ def subcontractor_toggle_active(request, pk):
 
 @login_required
 @permission_required('subcontractors.view_subcontractor', raise_exception=True)
-def subcontractor_detail(request, pk):
+def subcontractor_detail(request, pk, workspace_id=None, project_id=None):
     subcontractor = get_object_or_404(Subcontractor, pk=pk)
-    context = {'subcontractor': subcontractor}
+    context = {
+        'subcontractor': subcontractor,
+        'project_id': project_id,
+        'workspace_id': workspace_id,
+    }
     return render(request, 'subcontractors/subcontractor_detail.html', context)

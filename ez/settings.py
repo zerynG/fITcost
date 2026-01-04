@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'commercial_proposal',
     'nmacost',
     'itcost',
+    'services',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

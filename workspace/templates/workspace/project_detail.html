@@ -67,7 +67,7 @@
                             <a href="{% url 'nmacost:nmacost-list-project' workspace.id project.id %}" class="list-group-item list-group-item-action">
                                 <i class="fas fa-calculator me-2"></i> Форма стоимости НМА
                             </a>
-                            <a href="{% url 'itcost:dashboard' %}" class="list-group-item list-group-item-action">
+                            <a href="{% url 'itcost:dashboard_project' workspace.id project.id %}" class="list-group-item list-group-item-action">
                                 <i class="fas fa-calculator me-2"></i> Система расчета стоимости
                             </a>
                         </div>

@@ -28,7 +28,7 @@ def contractors_list(request, workspace_id=None, project_id=None):
 
 
 @login_required
-def contractor_detail(request, pk):
+def contractor_detail(request, pk, workspace_id=None, project_id=None):
     contractor = get_object_or_404(Contractor, pk=pk)
     services = contractor.services.all()
 
@@ -38,6 +38,8 @@ def contractor_detail(request, pk):
             service = service_form.save(commit=False)
             service.contractor = contractor
             service.save()
+            if project_id and workspace_id:
+                return redirect('contractors:contractor_detail_project', workspace_id=workspace_id, project_id=project_id, pk=contractor.pk)
             return redirect('contractors:contractor_detail', pk=contractor.pk)  # добавил пространство имен
     else:
         service_form = ServiceForm()
@@ -45,7 +47,9 @@ def contractor_detail(request, pk):
     return render(request, 'contractors/contractor_detail.html', {
         'contractor': contractor,
         'services': services,
-        'service_form': service_form
+        'service_form': service_form,
+        'project_id': project_id,
+        'workspace_id': workspace_id,
     })
 
 

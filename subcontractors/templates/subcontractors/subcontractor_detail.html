@@ -98,13 +98,24 @@
                     </div>
 
                     <div class="mt-4">
-                        <a href="{% url 'subcontractors:list' %}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Назад к списку
-                        </a>
-                        {% if perms.subcontractors.change_subcontractor %}
-                        <a href="{% url 'subcontractors:edit' subcontractor.pk %}" class="btn btn-primary">
-                            <i class="fas fa-edit"></i> Редактировать
-                        </a>
+                        {% if project_id and workspace_id %}
+                            <a href="{% url 'subcontractors:list_project' workspace_id project_id %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Назад к списку
+                            </a>
+                            {% if perms.subcontractors.change_subcontractor %}
+                            <a href="{% url 'subcontractors:edit_project' workspace_id project_id subcontractor.pk %}" class="btn btn-primary">
+                                <i class="fas fa-edit"></i> Редактировать
+                            </a>
+                            {% endif %}
+                        {% else %}
+                            <a href="{% url 'subcontractors:list' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Назад к списку
+                            </a>
+                            {% if perms.subcontractors.change_subcontractor %}
+                            <a href="{% url 'subcontractors:edit' subcontractor.pk %}" class="btn btn-primary">
+                                <i class="fas fa-edit"></i> Редактировать
+                            </a>
+                            {% endif %}
                         {% endif %}
                     </div>
                 </div>

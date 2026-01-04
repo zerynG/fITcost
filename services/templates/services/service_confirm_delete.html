@@ -1,9 +1,8 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'base_with_sidebar.html' %}
 
-{% block title %}Удаление субподрядчика{% endblock %}
+{% block title %}Удаление услуги{% endblock %}
 
-{% block content %}
+{% block main_content %}
 <div class="container-fluid">
     <div class="row">
         <div class="col-lg-6 mx-auto">
@@ -14,11 +13,9 @@
                     </h4>
                 </div>
                 <div class="card-body">
-                    <p>Вы уверены, что хотите удалить субподрядчика:</p>
+                    <p>Вы уверены, что хотите удалить услугу:</p>
                     <div class="alert alert-warning">
-                        <strong>{{ subcontractor.name }}</strong><br>
-                        ИНН: {{ subcontractor.inn }}<br>
-                        Тип: {{ subcontractor.get_contractor_type_display }}
+                        <strong>{{ service.name }}</strong>
                     </div>
 
                     <form method="post">
@@ -28,11 +25,11 @@
                                 <i class="fas fa-trash"></i> Удалить
                             </button>
                             {% if project_id and workspace_id %}
-                                <a href="{% url 'subcontractors:list_project' workspace_id project_id %}" class="btn btn-secondary">
+                                <a href="{% url 'services:service_list_project' workspace_id project_id %}" class="btn btn-secondary">
                                     <i class="fas fa-times"></i> Отмена
                                 </a>
                             {% else %}
-                                <a href="{% url 'subcontractors:list' %}" class="btn btn-secondary">
+                                <a href="{% url 'services:service_list' %}" class="btn btn-secondary">
                                     <i class="fas fa-times"></i> Отмена
                                 </a>
                             {% endif %}
@@ -44,3 +41,4 @@
     </div>
 </div>
 {% endblock %}
+

@@ -14,9 +14,14 @@ urlpatterns = [
     path('workspace/<int:workspace_id>/project/<int:project_id>/create/', views.create_proposal, name='create_project'),
     # Остальные маршруты
     path('<int:pk>/', views.proposal_detail, name='proposal_detail'),
+    path('<int:pk>/edit/', views.edit_proposal, name='proposal_edit'),
     path('<int:pk>/delete/', views.delete_proposal, name='delete_proposal'),
     path('<int:pk>/pdf/', views.download_pdf, name='download_pdf'),
     path('<int:pk>/excel/', views.download_excel, name='download_excel'),
     path('<int:pk>/word/', views.download_word, name='download_word'),
+    # Маршруты с workspace_id и project_id для просмотра, редактирования и удаления
+    path('workspace/<int:workspace_id>/project/<int:project_id>/<int:pk>/', views.proposal_detail, name='proposal_detail_project'),
+    path('workspace/<int:workspace_id>/project/<int:project_id>/<int:pk>/edit/', views.edit_proposal, name='proposal_edit_project'),
+    path('workspace/<int:workspace_id>/project/<int:project_id>/<int:pk>/delete/', views.delete_proposal, name='delete_proposal_project'),
     path('debug/', views.debug_urls, name='debug_urls'),
 ]

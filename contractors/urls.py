@@ -14,7 +14,8 @@ urlpatterns = [
     path('<int:pk>/', views.contractor_detail, name='contractor_detail'),
     path('<int:pk>/edit/', views.contractor_edit, name='contractor_edit'),
     path('<int:pk>/delete/', views.contractor_delete, name='contractor_delete'),
-    # Маршруты с workspace_id и project_id для редактирования и удаления
+    # Маршруты с workspace_id и project_id для просмотра, редактирования и удаления
+    path('workspace/<int:workspace_id>/project/<int:project_id>/<int:pk>/', views.contractor_detail, name='contractor_detail_project'),
     path('workspace/<int:workspace_id>/project/<int:project_id>/<int:pk>/edit/', views.contractor_edit, name='contractor_edit_project'),
     path('workspace/<int:workspace_id>/project/<int:project_id>/<int:pk>/delete/', views.contractor_delete, name='contractor_delete_project'),
 ]

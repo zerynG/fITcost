@@ -81,20 +81,29 @@
     </div>
 
     <div class="mt-3">
-        {% if project_id %}
+        {% if project_id and workspace_id %}
             <a href="{% url 'nmacost:nmacost-list-project' workspace_id project_id %}" class="btn btn-secondary">Назад к списку</a>
+            <a href="{% url 'nmacost:nmacost-edit-project' workspace_id project_id nmacost.id %}" class="btn btn-sm btn-warning">
+                <i class="fas fa-edit"></i>
+            </a>
+            <form method="post" action="{% url 'nmacost:nmacost-delete-project' workspace_id project_id nmacost.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Вы уверены, что хотите удалить эту стоимость НМА?')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </form>
         {% else %}
             <a href="{% url 'nmacost:nmacost-list' %}" class="btn btn-secondary">Назад к списку</a>
+            <a href="{% url 'nmacost:nmacost-edit' nmacost.id %}" class="btn btn-sm btn-warning">
+                <i class="fas fa-edit"></i>
+            </a>
+            <form method="post" action="{% url 'nmacost:nmacost-delete' nmacost.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Вы уверены, что хотите удалить эту стоимость НМА?')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </form>
         {% endif %}
-        <a href="{% url 'nmacost:nmacost-edit' nmacost.id %}" class="btn btn-sm btn-warning">
-            <i class="fas fa-edit"></i>
-        </a>
-        <form method="post" action="{% url 'nmacost:nmacost-delete' nmacost.id %}" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Вы уверены, что хотите удалить эту стоимость НМА?')">
-                <i class="fas fa-trash"></i>
-            </button>
-        </form>
     </div>
 </div>
 {% endblock main_content %}

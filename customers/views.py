@@ -94,9 +94,18 @@ class CustomerDeleteView(DeleteView):
 
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, 'Заказчик успешно удален')
-        # Проверяем, есть ли project_id в URL
+        # Получаем customer для определения project_id
+        customer = self.get_object()
+        # Проверяем, есть ли project_id в URL, если нет - пытаемся получить из объекта
         project_id = self.kwargs.get('project_id')
         workspace_id = self.kwargs.get('workspace_id')
+        
+        # Если project_id не передан в URL, пытаемся получить из customer
+        if not project_id and customer.project:
+            project_id = customer.project.id
+            if customer.project.workspace:
+                workspace_id = customer.project.workspace.id
+        
         super().delete(request, *args, **kwargs)
         if project_id and workspace_id:
             return redirect('customers:customer_list_project', workspace_id=workspace_id, project_id=project_id)

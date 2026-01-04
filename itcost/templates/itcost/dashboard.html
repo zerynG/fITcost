@@ -10,15 +10,27 @@
             <p class="text-muted mb-0">Контролируйте ключевые показатели стоимости разработки, НМА и коммерческих предложений.</p>
         </div>
         <div class="d-flex gap-2">
-            <a class="btn btn-primary" href="{% url 'itcost:calculation_create' %}">
-                <i class="fa-solid fa-plus me-2"></i>Новый расчет
-            </a>
-            <a class="btn btn-outline-secondary" href="{% url 'itcost:settings' %}">
-                <i class="fa-solid fa-gear me-2"></i>Настройки
-            </a>
-            <a class="btn btn-outline-info" href="{% url 'itcost:roles' %}">
-                <i class="fa-solid fa-users me-2"></i>Роли
-            </a>
+            {% if workspace_id and project_id %}
+                <a class="btn btn-primary" href="{% url 'itcost:calculation_create_project' workspace_id project_id %}">
+                    <i class="fa-solid fa-plus me-2"></i>Новый расчет
+                </a>
+                <a class="btn btn-outline-secondary" href="{% url 'itcost:settings_project' workspace_id project_id %}">
+                    <i class="fa-solid fa-gear me-2"></i>Настройки
+                </a>
+                <a class="btn btn-outline-info" href="{% url 'itcost:roles_project' workspace_id project_id %}">
+                    <i class="fa-solid fa-users me-2"></i>Роли
+                </a>
+            {% else %}
+                <a class="btn btn-primary" href="{% url 'itcost:calculation_create' %}">
+                    <i class="fa-solid fa-plus me-2"></i>Новый расчет
+                </a>
+                <a class="btn btn-outline-secondary" href="{% url 'itcost:settings' %}">
+                    <i class="fa-solid fa-gear me-2"></i>Настройки
+                </a>
+                <a class="btn btn-outline-info" href="{% url 'itcost:roles' %}">
+                    <i class="fa-solid fa-users me-2"></i>Роли
+                </a>
+            {% endif %}
         </div>
     </div>
 
@@ -87,7 +99,11 @@
                                 <td>{{ calc.intangible_asset_cost|floatformat:2 }} ₽</td>
                                 <td>{{ calc.commercial_offer_cost|floatformat:2 }} ₽</td>
                                 <td class="text-end">
-                                    <a href="{% url 'itcost:calculation_detail' calc.pk %}" class="btn btn-sm btn-outline-primary">Подробнее</a>
+                                    {% if workspace_id and project_id %}
+                                        <a href="{% url 'itcost:calculation_detail_project' workspace_id project_id calc.pk %}" class="btn btn-sm btn-outline-primary">Подробнее</a>
+                                    {% else %}
+                                        <a href="{% url 'itcost:calculation_detail' calc.pk %}" class="btn btn-sm btn-outline-primary">Подробнее</a>
+                                    {% endif %}
                                 </td>
                             </tr>
                         {% empty %}

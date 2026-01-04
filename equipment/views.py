@@ -98,12 +98,19 @@ class EquipmentDeleteView(DeleteView):
 
     def delete(self, request, *args, **kwargs):
         equipment = self.get_object()
+        # Получаем project_id и workspace_id из URL или из объекта
+        project_id = self.kwargs.get('project_id')
+        workspace_id = self.kwargs.get('workspace_id')
+        
+        # Если project_id не передан в URL, пытаемся получить из equipment
+        if not project_id and equipment.project:
+            project_id = equipment.project.id
+            if equipment.project.workspace:
+                workspace_id = equipment.project.workspace.id
+        
         equipment.is_active = False
         equipment.save()
         messages.success(request, 'Оборудование успешно удалено')
-        # Проверяем, есть ли project_id в URL
-        project_id = self.kwargs.get('project_id')
-        workspace_id = self.kwargs.get('workspace_id')
         if project_id and workspace_id:
             return redirect('equipment:list_project', workspace_id=workspace_id, project_id=project_id)
         return redirect(self.success_url)

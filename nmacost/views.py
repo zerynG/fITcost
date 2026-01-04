@@ -114,9 +114,8 @@ def nmacost_create(request, workspace_id=None, project_id=None):
                 nmacost.project = project
             nmacost.total_cost = 0  # Начальная стоимость
             nmacost.save()
-            if project_id:
-                from django.urls import reverse
-                return redirect('workspace:project_detail', workspace_id=workspace_id, project_id=project_id)
+            if project_id and workspace_id:
+                return redirect('nmacost:nmacost-list-project', workspace_id=workspace_id, project_id=project_id)
             return redirect('nmacost:nmacost-detail', nmacost_id=nmacost.id)
     else:
         form = NMACostForm()
@@ -133,14 +132,21 @@ def nmacost_create(request, workspace_id=None, project_id=None):
 
 
 @login_required
-def nmacost_edit(request, nmacost_id):
+def nmacost_edit(request, nmacost_id, workspace_id=None, project_id=None):
     """Редактирование записи НМА"""
     nmacost = get_object_or_404(NMACost, id=nmacost_id)
+    # Если project_id не передан, пытаемся получить из nmacost
+    if not project_id and nmacost.project:
+        project_id = nmacost.project.id
+        if nmacost.project.workspace:
+            workspace_id = nmacost.project.workspace.id
 
     if request.method == 'POST':
         form = NMACostForm(request.POST, instance=nmacost)
         if form.is_valid():
             form.save()
+            if project_id and workspace_id:
+                return redirect('nmacost:nmacost-detail', nmacost_id=nmacost.id)
             return redirect('nmacost:nmacost-detail', nmacost_id=nmacost.id)
     else:
         form = NMACostForm(instance=nmacost)
@@ -148,7 +154,9 @@ def nmacost_edit(request, nmacost_id):
     return render(request, 'nmacost/nmacost_form.html', {
         'form': form,
         'title': 'Редактирование стоимости НМА',
-        'nmacost': nmacost
+        'nmacost': nmacost,
+        'project_id': project_id,
+        'workspace_id': workspace_id,
     })
 
 
@@ -267,18 +275,27 @@ def export_word(request, nmacost_id):
 
 
 @login_required
-def nmacost_delete(request, nmacost_id):
+def nmacost_delete(request, nmacost_id, workspace_id=None, project_id=None):
     """Удаление записи НМА"""
     nmacost = get_object_or_404(NMACost, id=nmacost_id)
+    # Если project_id не передан, пытаемся получить из nmacost
+    if not project_id and nmacost.project:
+        project_id = nmacost.project.id
+        if nmacost.project.workspace:
+            workspace_id = nmacost.project.workspace.id
 
     if request.method == 'POST':
         project_name = nmacost.project.name if nmacost.project else "Без проекта"
         nmacost.delete()
         messages.success(request, f'Стоимость НМА "{project_name}" успешно удалена!')
+        if project_id and workspace_id:
+            return redirect('nmacost:nmacost-list-project', workspace_id=workspace_id, project_id=project_id)
         return redirect('nmacost:nmacost-list')
 
     return render(request, 'nmacost/nmacost_confirm_delete.html', {
-        'nmacost': nmacost
+        'nmacost': nmacost,
+        'project_id': project_id,
+        'workspace_id': workspace_id,
     })
 
 
@@ -288,6 +305,14 @@ def resource_delete(request, nmacost_id, resource_id):
     nmacost = get_object_or_404(NMACost, id=nmacost_id)
     resource = get_object_or_404(ResourceItem, id=resource_id, nmacost=nmacost)
 
+    # Получаем project_id и workspace_id для редиректа
+    project_id = None
+    workspace_id = None
+    if nmacost.project:
+        project_id = nmacost.project.id
+        if nmacost.project.workspace:
+            workspace_id = nmacost.project.workspace.id
+
     # Удаляем ресурс (работает и для GET и для POST)
     resource.delete()
     # Пересчитываем общую стоимость НМА
@@ -296,5 +321,5 @@ def resource_delete(request, nmacost_id, resource_id):
     nmacost.save()
     messages.success(request, 'Ресурс успешно удален!')
     
-    # Перенаправляем обратно на детальную страницу НМА
+    # Перенаправляем обратно на детальную страницу НМА (она сама определяет правильный список)
     return redirect('nmacost:nmacost-detail', nmacost_id=nmacost.id)

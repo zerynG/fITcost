@@ -1,0 +1,106 @@
+{% extends 'base_with_sidebar.html' %}
+
+{% block title %}Просмотр услуги: {{ service.name }}{% endblock %}
+
+{% block main_content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            {% if project_id and workspace_id %}
+                <a href="{% url 'services:service_list_project' workspace_id project_id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Назад к списку
+                </a>
+            {% else %}
+                <a href="{% url 'services:service_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Назад к списку
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">{{ service.name }}</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="40%">Название услуги:</th>
+                            <td>{{ service.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Часы:</th>
+                            <td>{{ service.hours|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Стоимость:</th>
+                            <td>{{ service.cost|default:"—" }} {% if service.cost %}руб.{% endif %}</td>
+                        </tr>
+                        <tr>
+                            <th>Ежемесячная стоимость:</th>
+                            <td>{{ service.monthly_cost|default:"—" }} {% if service.monthly_cost %}руб.{% endif %}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="40%">Дата начала:</th>
+                            <td>{{ service.start_date|date:"d.m.Y"|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Дата окончания:</th>
+                            <td>
+                                {% if service.is_indefinite %}
+                                    Бессрочно
+                                {% else %}
+                                    {{ service.end_date|date:"d.m.Y"|default:"—" }}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Бессрочно:</th>
+                            <td>
+                                {% if service.is_indefinite %}
+                                    <span class="badge bg-success">Да</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Нет</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Дата создания:</th>
+                            <td>{{ service.created_at|date:"d.m.Y H:i" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Последнее обновление:</th>
+                            <td>{{ service.updated_at|date:"d.m.Y H:i" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                {% if project_id and workspace_id %}
+                    <a href="{% url 'services:service_edit_project' workspace_id project_id service.pk %}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Редактировать
+                    </a>
+                    <a href="{% url 'services:service_delete_project' workspace_id project_id service.pk %}" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Удалить
+                    </a>
+                {% else %}
+                    <a href="{% url 'services:service_edit' service.pk %}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Редактировать
+                    </a>
+                    <a href="{% url 'services:service_delete' service.pk %}" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Удалить
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -60,10 +60,31 @@
                                    class="btn btn-sm btn-info" title="Просмотреть">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="{% url 'nmacost:nmacost-edit' nmacost.id %}"
-                                   class="btn btn-sm btn-warning" title="Редактировать">
-                                    <i class="fas fa-edit"></i>
-                                </a>
+                                {% if project_id and workspace_id %}
+                                    <a href="{% url 'nmacost:nmacost-edit-project' workspace_id project_id nmacost.id %}"
+                                       class="btn btn-sm btn-warning" title="Редактировать">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form method="post" action="{% url 'nmacost:nmacost-delete-project' workspace_id project_id nmacost.id %}" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Удалить"
+                                                onclick="return confirm('Вы уверены, что хотите удалить эту стоимость НМА?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <a href="{% url 'nmacost:nmacost-edit' nmacost.id %}"
+                                       class="btn btn-sm btn-warning" title="Редактировать">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form method="post" action="{% url 'nmacost:nmacost-delete' nmacost.id %}" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Удалить"
+                                                onclick="return confirm('Вы уверены, что хотите удалить эту стоимость НМА?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
                                 <a href="{% url 'nmacost:resource-add' nmacost.id %}"
                                    class="btn btn-sm btn-success" title="Добавить ресурс">
                                     <i class="fas fa-plus"></i>
@@ -74,13 +95,6 @@
                                     <i class="fas fa-file-pdf"></i>
                                 </a>
                                 {% endif %}
-                                <form method="post" action="{% url 'nmacost:nmacost-delete' nmacost.id %}" style="display:inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-danger" title="Удалить"
-                                            onclick="return confirm('Вы уверены, что хотите удалить эту стоимость НМА?')">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
                             </td>
                         </tr>
                         {% endfor %}

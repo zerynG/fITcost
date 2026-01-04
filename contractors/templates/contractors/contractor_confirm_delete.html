@@ -9,7 +9,11 @@
     <form method="post">
         {% csrf_token %}
         <button type="submit" class="btn btn-danger">Удалить</button>
-        <a href="{% url 'contractors:contractors_list' %}" class="btn btn-secondary">Отмена</a>
+        {% if project_id and workspace_id %}
+            <a href="{% url 'contractors:contractors_list_project' workspace_id project_id %}" class="btn btn-secondary">Отмена</a>
+        {% else %}
+            <a href="{% url 'contractors:contractors_list' %}" class="btn btn-secondary">Отмена</a>
+        {% endif %}
     </form>
 </div>
 {% endblock %}

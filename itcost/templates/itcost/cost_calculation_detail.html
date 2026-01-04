@@ -6,9 +6,15 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3">{{ calculation.project_name }}</h1>
         <div class="d-flex gap-2">
-            <a href="{% url 'itcost:calculation_edit' calculation.pk %}" class="btn btn-primary">Редактировать</a>
-            <a href="{% url 'itcost:calculation_delete' calculation.pk %}" class="btn btn-danger">Удалить</a>
-            <a href="{% url 'itcost:dashboard' %}" class="btn btn-secondary">Назад</a>
+            {% if workspace_id and project_id %}
+                <a href="{% url 'itcost:calculation_edit_project' workspace_id project_id calculation.pk %}" class="btn btn-primary">Редактировать</a>
+                <a href="{% url 'itcost:calculation_delete_project' workspace_id project_id calculation.pk %}" class="btn btn-danger">Удалить</a>
+                <a href="{% url 'itcost:dashboard_project' workspace_id project_id %}" class="btn btn-secondary">Назад</a>
+            {% else %}
+                <a href="{% url 'itcost:calculation_edit' calculation.pk %}" class="btn btn-primary">Редактировать</a>
+                <a href="{% url 'itcost:calculation_delete' calculation.pk %}" class="btn btn-danger">Удалить</a>
+                <a href="{% url 'itcost:dashboard' %}" class="btn btn-secondary">Назад</a>
+            {% endif %}
         </div>
     </div>
 

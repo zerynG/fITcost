@@ -20,7 +20,11 @@
                     </div>
                 {% endfor %}
                 <div class="d-flex justify-content-between">
-                    <a href="{% url 'itcost:dashboard' %}" class="btn btn-secondary">Отмена</a>
+                    {% if workspace_id and project_id %}
+                        <a href="{% url 'itcost:dashboard_project' workspace_id project_id %}" class="btn btn-secondary">Отмена</a>
+                    {% else %}
+                        <a href="{% url 'itcost:dashboard' %}" class="btn btn-secondary">Отмена</a>
+                    {% endif %}
                     <button type="submit" class="btn btn-primary">Сохранить</button>
                 </div>
             </form>

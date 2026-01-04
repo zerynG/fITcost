@@ -67,8 +67,13 @@
     </div>
 
     <div class="mt-4">
-        <a href="{% url 'commercial_proposal:proposal_list' %}" class="btn btn-secondary">Назад к списку</a>
-        <a href="/commercial/" class="btn btn-primary">Вернуться в коммерческий раздел</a>
+        {% if project_id and workspace_id %}
+            <a href="{% url 'commercial_proposal:proposal_list_project' workspace_id project_id %}" class="btn btn-secondary">Назад к списку</a>
+            <a href="{% url 'commercial_proposal:proposal_edit_project' workspace_id project_id proposal.pk %}" class="btn btn-primary">Редактировать</a>
+        {% else %}
+            <a href="{% url 'commercial_proposal:proposal_list' %}" class="btn btn-secondary">Назад к списку</a>
+            <a href="{% url 'commercial_proposal:proposal_edit' proposal.pk %}" class="btn btn-primary">Редактировать</a>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

@@ -47,13 +47,29 @@
                     <td>{{ proposal.creation_date }}</td>
                     <td>{{ proposal.total_cost }} руб.</td>
                     <td>
-                        <a href="{% url 'commercial_proposal:proposal_detail' proposal.pk %}" class="btn btn-sm btn-info">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                        <a href="{% url 'commercial_proposal:download_pdf' proposal.pk %}" class="btn btn-sm btn-danger">PDF</a>
-                        <a href="{% url 'commercial_proposal:delete_proposal' proposal.pk %}" class="btn btn-sm btn-outline-danger">
-                            <i class="fas fa-trash"></i>
-                        </a>
+                        {% if project_id and workspace_id %}
+                            <a href="{% url 'commercial_proposal:proposal_detail_project' workspace_id project_id proposal.pk %}" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'commercial_proposal:proposal_edit_project' workspace_id project_id proposal.pk %}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'commercial_proposal:download_pdf' proposal.pk %}" class="btn btn-sm btn-danger">PDF</a>
+                            <a href="{% url 'commercial_proposal:delete_proposal_project' workspace_id project_id proposal.pk %}" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        {% else %}
+                            <a href="{% url 'commercial_proposal:proposal_detail' proposal.pk %}" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'commercial_proposal:proposal_edit' proposal.pk %}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'commercial_proposal:download_pdf' proposal.pk %}" class="btn btn-sm btn-danger">PDF</a>
+                            <a href="{% url 'commercial_proposal:delete_proposal' proposal.pk %}" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}

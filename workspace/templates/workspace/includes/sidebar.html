@@ -62,6 +62,12 @@
                         Реестр субподрядчиков
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'services' in request.path %}active{% endif %}" href="{% url 'services:service_list_project' workspace_id project_id %}">
+                        <i class="fas fa-concierge-bell me-2"></i>
+                        Реестр услуг
+                    </a>
+                </li>
                 <li class="nav-item mt-3">
                     <hr>
                     <small class="text-muted px-3">Инструменты проекта</small>
@@ -85,7 +91,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if 'itcost' in request.path %}active{% endif %}" href="{% url 'itcost:dashboard' %}">
+                    <a class="nav-link {% if 'itcost' in request.path %}active{% endif %}" href="{% url 'itcost:dashboard_project' workspace_id project_id %}">
                         <i class="fas fa-calculator me-2"></i>
                         Система расчета стоимости
                     </a>

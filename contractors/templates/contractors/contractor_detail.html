@@ -53,6 +53,10 @@
         </tbody>
     </table>
 
-    <a href="{% url 'contractors:contractors_list' %}" class="btn btn-secondary">Назад к списку</a>
+    {% if project_id and workspace_id %}
+        <a href="{% url 'contractors:contractors_list_project' workspace_id project_id %}" class="btn btn-secondary">Назад к списку</a>
+    {% else %}
+        <a href="{% url 'contractors:contractors_list' %}" class="btn btn-secondary">Назад к списку</a>
+    {% endif %}
 </div>
 {% endblock %}

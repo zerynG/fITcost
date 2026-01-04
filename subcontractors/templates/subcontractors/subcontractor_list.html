@@ -90,10 +90,17 @@
                                 </span>
                             </td>
                             <td>
-                                <a href="{% url 'subcontractors:detail' subcontractor.pk %}"
-                                   class="btn btn-sm btn-info" title="Просмотреть">
-                                    <i class="fas fa-eye"></i>
-                                </a>
+                                {% if project_id and workspace_id %}
+                                    <a href="{% url 'subcontractors:detail_project' workspace_id project_id subcontractor.pk %}"
+                                       class="btn btn-sm btn-info" title="Просмотреть">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'subcontractors:detail' subcontractor.pk %}"
+                                       class="btn btn-sm btn-info" title="Просмотреть">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                {% endif %}
                                 {% if perms.subcontractors.change_subcontractor %}
                                     {% if project_id and workspace_id %}
                                         <a href="{% url 'subcontractors:edit_project' workspace_id project_id subcontractor.pk %}"

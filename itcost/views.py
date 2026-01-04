@@ -43,8 +43,9 @@ class CostDashboardView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["workspace_id"] = self.request.GET.get("workspace_id")
-        context["project_id"] = self.request.GET.get("project_id")
+        # Получаем workspace_id и project_id из URL kwargs или GET параметров
+        context["workspace_id"] = self.kwargs.get("workspace_id") or self.request.GET.get("workspace_id")
+        context["project_id"] = self.kwargs.get("project_id") or self.request.GET.get("project_id")
         qs = self.get_queryset()
         aggregates = qs.aggregate(
             development_total=Sum("development_cost"),
@@ -105,8 +106,9 @@ class CostCalculationCreateView(LoginRequiredMixin, TemplateView):
             commercial_form.fields["customer"].queryset = qs.distinct()
 
     def get(self, request, *args, **kwargs):
-        self.project_id = request.GET.get("project_id")
-        self.workspace_id = request.GET.get("workspace_id")
+        # Получаем project_id и workspace_id из URL kwargs или GET параметров
+        self.project_id = kwargs.get("project_id") or request.GET.get("project_id")
+        self.workspace_id = kwargs.get("workspace_id") or request.GET.get("workspace_id")
         form = self.form_class()
         self._filter_related(form)
         context = {"form": form}
@@ -130,8 +132,9 @@ class CostCalculationCreateView(LoginRequiredMixin, TemplateView):
         return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
-        self.project_id = request.POST.get("project_id") or request.GET.get("project_id")
-        self.workspace_id = request.POST.get("workspace_id") or request.GET.get("workspace_id")
+        # Получаем project_id и workspace_id из URL kwargs, POST или GET параметров
+        self.project_id = kwargs.get("project_id") or request.POST.get("project_id") or request.GET.get("project_id")
+        self.workspace_id = kwargs.get("workspace_id") or request.POST.get("workspace_id") or request.GET.get("workspace_id")
         # Создаем копию данных для модификации (copy() создает мутабельную копию QueryDict)
         form_data = request.POST.copy()
         context = {}
@@ -241,6 +244,8 @@ class CostCalculationCreateView(LoginRequiredMixin, TemplateView):
             calculation.commercial_proposal = commercial_proposal if commercial_proposal else None
             calculation.save()
             messages.success(request, "Расчет успешно создан.")
+            if self.project_id and self.workspace_id:
+                return redirect("itcost:calculation_detail_project", workspace_id=self.workspace_id, project_id=self.project_id, pk=calculation.pk)
             return redirect("itcost:calculation_detail", pk=calculation.pk)
         
         # Если основная форма невалидна, добавляем пустые формы для отображения
@@ -292,17 +297,19 @@ class CostCalculationDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context["components"] = self.object.calculate_components()
         # Передаем идентификаторы для сайдбара
-        project_id = None
-        workspace_id = None
-        if self.object.nma_cost and self.object.nma_cost.project:
-            project_id = self.object.nma_cost.project_id
-            workspace_id = getattr(self.object.nma_cost.project, "workspace_id", None)
-        elif self.object.commercial_proposal and self.object.commercial_proposal.project:
-            project_id = self.object.commercial_proposal.project_id
-            workspace_id = getattr(self.object.commercial_proposal.project, "workspace_id", None)
-        # Переопределяем при наличии GET-параметров
-        project_id = self.request.GET.get("project_id") or project_id
-        workspace_id = self.request.GET.get("workspace_id") or workspace_id
+        # Получаем из URL kwargs, GET параметров или из объекта
+        project_id = self.kwargs.get("project_id") or self.request.GET.get("project_id")
+        workspace_id = self.kwargs.get("workspace_id") or self.request.GET.get("workspace_id")
+        
+        # Если не передан, пытаемся получить из объекта
+        if not project_id:
+            if self.object.nma_cost and self.object.nma_cost.project:
+                project_id = self.object.nma_cost.project_id
+                workspace_id = workspace_id or getattr(self.object.nma_cost.project, "workspace_id", None)
+            elif self.object.commercial_proposal and self.object.commercial_proposal.project:
+                project_id = self.object.commercial_proposal.project_id
+                workspace_id = workspace_id or getattr(self.object.commercial_proposal.project, "workspace_id", None)
+        
         context["project_id"] = project_id
         context["workspace_id"] = workspace_id
         return context
@@ -363,11 +370,21 @@ class CostCalculationUpdateView(LoginRequiredMixin, TemplateView):
 
     def post(self, request, *args, **kwargs):
         calculation = self.get_object()
-        self.project_id = request.POST.get("project_id") or request.GET.get("project_id") or (
-            calculation.nma_cost.project_id if calculation.nma_cost else
-            calculation.commercial_proposal.project_id if calculation.commercial_proposal else None
+        # Получаем project_id и workspace_id из URL kwargs, POST или GET параметров
+        self.project_id = kwargs.get("project_id") or request.POST.get("project_id") or request.GET.get("project_id") or (
+            calculation.nma_cost.project_id if calculation.nma_cost and calculation.nma_cost.project else
+            calculation.commercial_proposal.project_id if calculation.commercial_proposal and calculation.commercial_proposal.project else None
         )
-        self.workspace_id = request.POST.get("workspace_id") or request.GET.get("workspace_id")
+        self.workspace_id = kwargs.get("workspace_id") or request.POST.get("workspace_id") or request.GET.get("workspace_id")
+        # Если workspace_id не передан, пытаемся получить из проекта
+        if not self.workspace_id and self.project_id:
+            from workspace.models import Project
+            try:
+                project = Project.objects.get(id=self.project_id)
+                if project.workspace:
+                    self.workspace_id = project.workspace.id
+            except Project.DoesNotExist:
+                pass
         form = self.form_class(request.POST, instance=calculation)
         self._filter_related(form)
         context = {"form": form, "calculation": calculation, "project_id": self.project_id, "workspace_id": self.workspace_id}
@@ -451,6 +468,8 @@ class CostCalculationUpdateView(LoginRequiredMixin, TemplateView):
                 updated.commercial_proposal = None
             updated.save()
             messages.success(request, "Расчет обновлен.")
+            if self.project_id and self.workspace_id:
+                return redirect("itcost:calculation_detail_project", workspace_id=self.workspace_id, project_id=self.project_id, pk=updated.pk)
             return redirect("itcost:calculation_detail", pk=updated.pk)
         
         # Если основная форма невалидна, добавляем пустые формы для отображения
@@ -491,23 +510,30 @@ class RoleAssignmentView(LoginRequiredMixin, FormView):
     form_class = RoleAssignmentForm
     success_url = reverse_lazy("itcost:roles")
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["assignments"] = RoleAssignment.objects.select_related(
+            "user", "assigned_by"
+        )
+        # Получаем workspace_id и project_id из URL kwargs или GET параметров
+        context["workspace_id"] = self.kwargs.get("workspace_id") or self.request.GET.get("workspace_id")
+        context["project_id"] = self.kwargs.get("project_id") or self.request.GET.get("project_id")
+        return context
+
     def form_valid(self, form):
         assignment = form.save(commit=False)
         assignment.assigned_by = self.request.user
         try:
             assignment.save()
             messages.success(self.request, "Роль назначена.")
+            workspace_id = self.kwargs.get("workspace_id") or self.request.GET.get("workspace_id")
+            project_id = self.kwargs.get("project_id") or self.request.GET.get("project_id")
+            if workspace_id and project_id:
+                return redirect("itcost:roles_project", workspace_id=workspace_id, project_id=project_id)
             return super().form_valid(form)
         except IntegrityError:
             form.add_error(None, "Такая роль уже назначена выбранному пользователю.")
             return self.form_invalid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["assignments"] = RoleAssignment.objects.select_related(
-            "user", "assigned_by"
-        )
-        return context
 
 
 class CostCalculationDeleteView(LoginRequiredMixin, TemplateView):
@@ -520,14 +546,19 @@ class CostCalculationDeleteView(LoginRequiredMixin, TemplateView):
     
     def get(self, request, *args, **kwargs):
         calculation = self.get_object()
-        project_id = request.GET.get("project_id")
-        workspace_id = request.GET.get("workspace_id")
-        if calculation.nma_cost and calculation.nma_cost.project:
-            project_id = project_id or calculation.nma_cost.project_id
-            workspace_id = workspace_id or getattr(calculation.nma_cost.project, "workspace_id", None)
-        if calculation.commercial_proposal and calculation.commercial_proposal.project:
-            project_id = project_id or calculation.commercial_proposal.project_id
-            workspace_id = workspace_id or getattr(calculation.commercial_proposal.project, "workspace_id", None)
+        # Получаем project_id и workspace_id из URL kwargs, GET параметров или из объекта
+        project_id = kwargs.get("project_id") or request.GET.get("project_id")
+        workspace_id = kwargs.get("workspace_id") or request.GET.get("workspace_id")
+        
+        # Если не передан, пытаемся получить из объекта
+        if not project_id:
+            if calculation.nma_cost and calculation.nma_cost.project:
+                project_id = calculation.nma_cost.project_id
+                workspace_id = workspace_id or getattr(calculation.nma_cost.project, "workspace_id", None)
+            elif calculation.commercial_proposal and calculation.commercial_proposal.project:
+                project_id = calculation.commercial_proposal.project_id
+                workspace_id = workspace_id or getattr(calculation.commercial_proposal.project, "workspace_id", None)
+        
         return self.render_to_response({"calculation": calculation, "project_id": project_id, "workspace_id": workspace_id})
     
     def post(self, request, *args, **kwargs):

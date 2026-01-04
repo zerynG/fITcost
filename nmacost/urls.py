@@ -21,4 +21,7 @@ urlpatterns = [
     path('<int:nmacost_id>/export/pdf/', views.export_pdf, name='export-pdf'),
     path('<int:nmacost_id>/export/excel/', views.export_excel, name='export-excel'),
     path('<int:nmacost_id>/export/word/', views.export_word, name='export-word'),
+    # Маршруты с workspace_id и project_id для редактирования и удаления
+    path('workspace/<int:workspace_id>/project/<int:project_id>/<int:nmacost_id>/edit/', views.nmacost_edit, name='nmacost-edit-project'),
+    path('workspace/<int:workspace_id>/project/<int:project_id>/<int:nmacost_id>/delete/', views.nmacost_delete, name='nmacost-delete-project'),
 ]
