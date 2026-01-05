@@ -1,103 +1,427 @@
 {% extends 'base_with_sidebar.html' %}
 {% load static %}
 
+{% block title %}Управление ресурсами проекта{% endblock %}
+
 {% block main_content %}
-<div class="container-fluid">
+<div class="container-fluid py-4">
+    <!-- Заголовок страницы -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Управление ресурсами проекта</h1>
+            <p class="text-muted mb-0">Добавление и организация всех ресурсов проекта "{{ project.name }}"</p>
+        </div>
+        {% if workspace_id and project_id %}
+        <a href="{% url 'workspace:project_detail' workspace_id project_id %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>К проекту
+        </a>
+        {% endif %}
+    </div>
+
     <div class="row">
-        <div class="col-md-12">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2>Управление ресурсами проекта: {{ project.name }}</h2>
-                <div>
-                    <a href="{% url 'projects:project_detail' project.pk %}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> К проекту
-                    </a>
-                </div>
-            </div>
-            
-            <!-- Кнопка добавления ресурса -->
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Добавить ресурс</h5>
+        <!-- Левая колонка: Форма добавления ресурса и статистика -->
+        <div class="col-lg-4 col-xl-3">
+            <!-- Форма добавления ресурса -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-plus-circle text-primary me-2"></i>Добавить ресурс в проект
+                    </h5>
                 </div>
                 <div class="card-body">
-                    <p class="mb-3">Добавьте ресурс в проект. Вы можете выбрать существующий ресурс из реестра или создать новый.</p>
-                    <a href="{% url 'projects:add_resource' project.pk %}" class="btn btn-primary btn-lg">
-                        <i class="fas fa-plus"></i> Добавить ресурс
-                    </a>
-                </div>
-            </div>
-            
-            <!-- Список существующих ресурсов проекта -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Ресурсы проекта</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead class="thead-dark">
-                                <tr>
-                                    <th>Название ресурса</th>
-                                    <th>Тип ресурса</th>
-                                    <th>Выбор исполнителя</th>
-                                    <th>Название услуги</th>
-                                    <th>Интервал</th>
-                                    <th>Себестоимость</th>
-                                    <th>Маржинальность</th>
-                                    <th>Итоговая стоимость</th>
-                                    <th>Действия</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for resource in resources %}
-                                <tr>
-                                    <td>{{ resource.name }}</td>
-                                    <td>{{ resource.get_resource_type_display }}</td>
-                                    <td>{{ resource.get_executor_display }}</td>
-                                    <td>{{ resource.service_name }}</td>
-                                    <td>
-                                        <small>
-                                            {{ resource.start_date|date:"d.m.Y" }} - {{ resource.end_date|date:"d.m.Y" }}
-                                        </small>
-                                    </td>
-                                    <td>{{ resource.cost_price|floatformat:2 }} руб.</td>
-                                    <td>
-                                        {% if request.user.is_staff or request.user.is_superuser %}
-                                            {{ resource.margin }}%
-                                        {% else %}
-                                            <span class="text-muted">—</span>
-                                        {% endif %}
-                                    </td>
-                                    <td><strong>{{ resource.final_cost|floatformat:2 }} руб.</strong></td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="{% url 'projects:edit_resource' resource.pk %}" class="btn btn-sm btn-primary" title="Редактировать">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <form action="{% url 'projects:delete_resource' resource.pk %}" method="post" style="display:inline;">
-                                                {% csrf_token %}
-                                                <button type="submit" class="btn btn-sm btn-danger" 
-                                                        onclick="return confirm('Удалить ресурс?')" title="Удалить">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
+                    <form method="post" id="addResourceForm">
+                        {% csrf_token %}
+                        <!-- Выбор типа ресурса -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Тип ресурса <span class="text-danger">*</span></label>
+                            <input type="hidden" name="resource_type" id="resourceTypeInput" value="">
+                            <div class="row g-2" id="resourceTypeSelector">
+                                <div class="col-6">
+                                    <div class="card h-100 type-option" data-type="employee" style="cursor: pointer; border: 2px solid #e0e0e0; transition: all 0.3s;">
+                                        <div class="card-body text-center p-3">
+                                            <i class="fas fa-user-friends fa-2x text-primary mb-2"></i>
+                                            <div class="fw-bold small">Сотрудники</div>
                                         </div>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="9" class="text-center text-muted">
-                                        <p class="mt-3">Ресурсы не добавлены</p>
-                                        <p>Используйте кнопку "Добавить ресурс" для добавления ресурсов</p>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="card h-100 type-option" data-type="contractor" style="cursor: pointer; border: 2px solid #e0e0e0; transition: all 0.3s;">
+                                        <div class="card-body text-center p-3">
+                                            <i class="fas fa-user-tie fa-2x text-success mb-2"></i>
+                                            <div class="fw-bold small">Исполнители</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="card h-100 type-option" data-type="equipment" style="cursor: pointer; border: 2px solid #e0e0e0; transition: all 0.3s;">
+                                        <div class="card-body text-center p-3">
+                                            <i class="fas fa-tools fa-2x text-danger mb-2"></i>
+                                            <div class="fw-bold small">Оборудование</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="card h-100 type-option" data-type="subcontractor" style="cursor: pointer; border: 2px solid #e0e0e0; transition: all 0.3s;">
+                                        <div class="card-body text-center p-3">
+                                            <i class="fas fa-handshake fa-2x text-warning mb-2"></i>
+                                            <div class="fw-bold small">Субподрядчики</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Выбор ресурса из списка -->
+                        <div class="mb-3" id="resourceSelectContainer" style="display: none;">
+                            <label for="resourceSelect" class="form-label">Ресурсы <span class="text-danger">*</span></label>
+                            <select class="form-select" id="resourceSelect" name="resource_id" required>
+                                <option value="">-- Выберите ресурс из списка --</option>
+                            </select>
+                        </div>
+
+                        <!-- Дополнительные поля формы -->
+                        <div id="resourceFormFields" style="display: none;">
+                            <div class="mb-3">
+                                <label for="service_name" class="form-label">Название услуги <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="service_name" name="service_name" required>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <label for="start_date" class="form-label">Дата начала <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="start_date" name="start_date" required>
+                                </div>
+                                <div class="col-6">
+                                    <label for="end_date" class="form-label">Дата окончания <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="end_date" name="end_date" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="quantity" class="form-label">Количество <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="quantity" name="quantity" step="0.01" value="1" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="margin" class="form-label">Маржинальность (%) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="margin" name="margin" step="0.01" value="0" required>
+                            </div>
+
+                            <div class="mb-3" id="subcontractorRateContainer" style="display: none;">
+                                <label for="subcontractor_rate" class="form-label">Стоимость за единицу (для субподрядчика)</label>
+                                <input type="number" class="form-control" id="subcontractor_rate" name="subcontractor_rate" step="0.01">
+                            </div>
+
+                            <div class="mb-3" id="serviceContainer" style="display: none;">
+                                <label for="service" class="form-label">Услуга исполнителя</label>
+                                <select class="form-select" id="service" name="service">
+                                    <option value="">-- Выберите услугу --</option>
+                                </select>
+                            </div>
+
+                            <div class="d-flex gap-2 mt-4">
+                                <button type="button" class="btn btn-secondary flex-fill" id="cancelBtn">
+                                    <i class="fas fa-times me-2"></i>Отмена
+                                </button>
+                                <button type="submit" class="btn btn-primary flex-fill">
+                                    <i class="fas fa-plus me-2"></i>Добавить в проект
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Статистика проекта -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie text-primary me-2"></i>Статистика проекта
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="h4 mb-1">{{ stats.total_resources }}</div>
+                                <div class="small text-muted">Всего ресурсов</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="h4 mb-1">{{ stats.employees_count }}</div>
+                                <div class="small text-muted">Сотрудники</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="h4 mb-1">{{ stats.contractors_count }}</div>
+                                <div class="small text-muted">Исполнители</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="h4 mb-1">{{ stats.equipment_count }}</div>
+                                <div class="small text-muted">Оборудование</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="h4 mb-1">{{ stats.subcontractors_count }}</div>
+                                <div class="small text-muted">Субподрядчики</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-primary text-white p-3 rounded text-center">
+                        <div class="h3 mb-1">{{ project.total_cost|floatformat:0 }} ₽</div>
+                        <div class="small">Общая стоимость проекта</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Правая колонка: Список ресурсов -->
+        <div class="col-lg-8 col-xl-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-boxes text-primary me-2"></i>Ресурсы проекта
+                    </h5>
+                    <span class="badge bg-primary">{{ resources|length }} ресурсов</span>
+                </div>
+                <div class="card-body">
+                    <!-- Фильтры -->
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        <button class="btn btn-sm btn-outline-primary filter-btn active" data-filter="all">Все</button>
+                        <button class="btn btn-sm btn-outline-primary filter-btn" data-filter="employee">Сотрудники</button>
+                        <button class="btn btn-sm btn-outline-primary filter-btn" data-filter="contractor">Исполнители</button>
+                        <button class="btn btn-sm btn-outline-primary filter-btn" data-filter="equipment">Оборудование</button>
+                        <button class="btn btn-sm btn-outline-primary filter-btn" data-filter="subcontractor">Субподрядчики</button>
+                    </div>
+
+                    <!-- Список ресурсов -->
+                    <div class="row g-3" id="resourceGrid">
+                        {% for resource in resources %}
+                        <div class="col-md-6 col-xl-4 resource-card" data-type="{{ resource.resource_type }}">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-light">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary text-white rounded p-2 me-2">
+                                            {% if resource.resource_type == 'employee' %}
+                                                <i class="fas fa-user-friends"></i>
+                                            {% elif resource.resource_type == 'contractor' %}
+                                                <i class="fas fa-user-tie"></i>
+                                            {% elif resource.resource_type == 'equipment' %}
+                                                <i class="fas fa-tools"></i>
+                                            {% elif resource.resource_type == 'subcontractor' %}
+                                                <i class="fas fa-handshake"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0">{{ resource.name }}</h6>
+                                            <small class="text-muted">{{ resource.get_resource_type_display }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="small mb-2">
+                                        <strong>Исполнитель:</strong> {{ resource.get_executor_display }}
+                                    </div>
+                                    <div class="small mb-2">
+                                        <strong>Услуга:</strong> {{ resource.service_name }}
+                                    </div>
+                                    <div class="small mb-2">
+                                        <strong>Период:</strong> {{ resource.start_date|date:"d.m.Y" }} - {{ resource.end_date|date:"d.m.Y" }}
+                                    </div>
+                                    <div class="small mb-2">
+                                        <strong>Себестоимость:</strong> {{ resource.cost_price|floatformat:2 }} ₽
+                                    </div>
+                                    <div class="small mb-2">
+                                        <strong>Итоговая стоимость:</strong> <strong>{{ resource.final_cost|floatformat:2 }} ₽</strong>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-white border-top">
+                                    <div class="btn-group w-100" role="group">
+                                        <a href="{% url 'projects:edit_resource' resource.pk %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye me-1"></i>Подробнее
+                                        </a>
+                                        <form action="{% url 'projects:delete_resource' resource.pk %}" method="post" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Удалить ресурс?')">
+                                                <i class="fas fa-trash me-1"></i>Удалить
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <div class="text-center py-5">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                <h5>Ресурсы не найдены</h5>
+                                <p class="text-muted">Добавьте ресурсы в проект или измените фильтр</p>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+.type-option:hover {
+    border-color: #0d6efd !important;
+    transform: translateY(-2px);
+}
+.type-option.active {
+    border-color: #0d6efd !important;
+    background-color: #f0f9ff !important;
+}
+.filter-btn.active {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}
+.resource-card {
+    transition: all 0.3s;
+}
+.resource-card:hover {
+    transform: translateY(-2px);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const typeOptions = document.querySelectorAll('.type-option');
+    const resourceTypeInput = document.getElementById('resourceTypeInput');
+    const resourceSelect = document.getElementById('resourceSelect');
+    const resourceSelectContainer = document.getElementById('resourceSelectContainer');
+    const resourceFormFields = document.getElementById('resourceFormFields');
+    const subcontractorRateContainer = document.getElementById('subcontractorRateContainer');
+    const serviceContainer = document.getElementById('serviceContainer');
+    const cancelBtn = document.getElementById('cancelBtn');
+
+    // Ресурсы для заполнения списка
+    const resources = {
+        'employee': [
+            {% for employee in available_employees %}
+            {id: {{ employee.pk }}, name: '{{ employee.get_full_name|escapejs }}'},
+            {% endfor %}
+        ],
+        'contractor': [
+            {% for contractor in available_contractors %}
+            {id: {{ contractor.pk }}, name: '{{ contractor|escapejs }}'},
+            {% endfor %}
+        ],
+        'subcontractor': [
+            {% for subcontractor in available_subcontractors %}
+            {id: {{ subcontractor.pk }}, name: '{{ subcontractor.name|escapejs }}'},
+            {% endfor %}
+        ],
+        'equipment': [
+            {% for equipment in available_equipment %}
+            {id: {{ equipment.pk }}, name: '{{ equipment.name|escapejs }}'},
+            {% endfor %}
+        ]
+    };
+
+    // Выбор типа ресурса
+    typeOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            typeOptions.forEach(opt => opt.classList.remove('active'));
+            this.classList.add('active');
+            
+            const resourceType = this.dataset.type;
+            resourceTypeInput.value = resourceType;
+            
+            // Очищаем и заполняем список ресурсов
+            resourceSelect.innerHTML = '<option value="">-- Выберите ресурс из списка --</option>';
+            const resourceList = resources[resourceType] || [];
+            resourceList.forEach(resource => {
+                const option = document.createElement('option');
+                option.value = resource.id;
+                option.textContent = resource.name;
+                resourceSelect.appendChild(option);
+            });
+            
+            // Показываем контейнер выбора ресурса
+            resourceSelectContainer.style.display = 'block';
+            resourceFormFields.style.display = 'none';
+            
+            // Управление дополнительными полями
+            if (resourceType === 'subcontractor') {
+                subcontractorRateContainer.style.display = 'block';
+            } else {
+                subcontractorRateContainer.style.display = 'none';
+            }
+            
+            if (resourceType === 'contractor') {
+                serviceContainer.style.display = 'block';
+                // Загружаем услуги для выбранного исполнителя
+                loadServices();
+            } else {
+                serviceContainer.style.display = 'none';
+            }
+        });
+    });
+
+    // Выбор ресурса
+    resourceSelect.addEventListener('change', function() {
+        if (this.value && resourceTypeInput.value) {
+            // Показываем поля формы
+            resourceFormFields.style.display = 'block';
+            
+            // Автозаполнение названия услуги
+            const resourceType = resourceTypeInput.value;
+            const selectedOption = this.options[this.selectedIndex];
+            const resourceName = selectedOption.textContent;
+            const serviceNameInput = document.getElementById('service_name');
+            if (serviceNameInput && !serviceNameInput.value) {
+                serviceNameInput.value = 'Услуга ' + resourceName;
+            }
+        } else {
+            resourceFormFields.style.display = 'none';
+        }
+    });
+
+    // Кнопка отмены
+    cancelBtn.addEventListener('click', function() {
+        typeOptions.forEach(opt => opt.classList.remove('active'));
+        resourceTypeInput.value = '';
+        resourceSelect.innerHTML = '<option value="">-- Выберите ресурс из списка --</option>';
+        resourceSelectContainer.style.display = 'none';
+        resourceFormFields.style.display = 'none';
+        document.getElementById('addResourceForm').reset();
+    });
+
+    // Фильтрация ресурсов
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const resourceCards = document.querySelectorAll('.resource-card');
+    
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            const filter = this.dataset.filter;
+            resourceCards.forEach(card => {
+                if (filter === 'all' || card.dataset.type === filter) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // Загрузка услуг для исполнителя (заглушка, можно расширить)
+    function loadServices() {
+        // Здесь можно добавить AJAX запрос для загрузки услуг
+        // Пока оставляем пустым
+    }
+});
+</script>
 {% endblock main_content %}

@@ -7,9 +7,15 @@
         <div class="col-md-10 offset-md-1">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2>Добавить ресурс в проект: {{ project.name }}</h2>
-                <a href="{% url 'projects:manage_resources' project.pk %}" class="btn btn-secondary">
+                {% if workspace_id and project_id %}
+                <a href="{% url 'projects:manage_resources' workspace_id project_id %}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> К управлению ресурсами
                 </a>
+                {% else %}
+                <a href="{% url 'projects:manage_resources_legacy' project.pk %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> К управлению ресурсами
+                </a>
+                {% endif %}
             </div>
 
             {% if not mode or mode == 'existing' %}
@@ -239,7 +245,11 @@
                                 
                                 <div class="mt-4">
                                     <button type="submit" class="btn btn-success">Добавить ресурс</button>
-                                    <a href="{% url 'projects:manage_resources' project.pk %}" class="btn btn-secondary">Отмена</a>
+                                    {% if workspace_id and project_id %}
+                                    <a href="{% url 'projects:manage_resources' workspace_id project_id %}" class="btn btn-secondary">Отмена</a>
+                                    {% else %}
+                                    <a href="{% url 'projects:manage_resources_legacy' project.pk %}" class="btn btn-secondary">Отмена</a>
+                                    {% endif %}
                                 </div>
                             </form>
                         </div>

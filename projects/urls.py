@@ -24,13 +24,21 @@ urlpatterns = [
     # URL: /projects/<id>/delete/
     path('<int:pk>/delete/', views.project_delete, name='project_delete'),
     
-    # Управление ресурсами проекта
-    # URL: /projects/<id>/resources/
-    path('<int:project_pk>/resources/', views.manage_resources, name='manage_resources'),
+    # Управление ресурсами проекта с workspace_id
+    # URL: /projects/workspace/<workspace_id>/project/<project_id>/
+    path('workspace/<int:workspace_id>/project/<int:project_id>/', views.manage_resources, name='manage_resources'),
     
-    # Добавление ресурса в проект
+    # Управление ресурсами проекта (старый формат для обратной совместимости)
+    # URL: /projects/<id>/resources/
+    path('<int:project_pk>/resources/', views.manage_resources, name='manage_resources_legacy'),
+    
+    # Добавление ресурса в проект с workspace_id
+    # URL: /projects/workspace/<workspace_id>/project/<project_id>/add-resource/
+    path('workspace/<int:workspace_id>/project/<int:project_id>/add-resource/', views.add_resource, name='add_resource'),
+    
+    # Добавление ресурса в проект (старый формат для обратной совместимости)
     # URL: /projects/<project_id>/add-resource/
-    path('<int:project_pk>/add-resource/', views.add_resource, name='add_resource'),
+    path('<int:project_pk>/add-resource/', views.add_resource, name='add_resource_legacy'),
     
     # Редактирование ресурса
     # URL: /projects/resource/<resource_id>/edit/
@@ -47,4 +55,8 @@ urlpatterns = [
     # API: Получение данных ресурса из реестра
     # URL: /projects/api/resource/<resource_type>/<resource_id>/
     path('api/resource/<str:resource_type>/<int:resource_id>/', views.get_resource_data, name='get_resource_data'),
+    
+    # API: Получение списка ресурсов по типу для проекта
+    # URL: /projects/api/resources/<workspace_id>/<project_id>/<resource_type>/
+    path('api/resources/<int:workspace_id>/<int:project_id>/<str:resource_type>/', views.get_resources_by_type, name='get_resources_by_type'),
 ]

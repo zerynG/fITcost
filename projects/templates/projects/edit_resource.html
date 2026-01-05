@@ -161,7 +161,11 @@
                 
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary">Сохранить изменения</button>
-                    <a href="{% url 'projects:manage_resources' project.pk %}" class="btn btn-secondary">Отмена</a>
+                    {% if workspace_id and project_id %}
+                    <a href="{% url 'projects:manage_resources' workspace_id project_id %}" class="btn btn-secondary">Отмена</a>
+                    {% else %}
+                    <a href="{% url 'projects:manage_resources_legacy' project.pk %}" class="btn btn-secondary">Отмена</a>
+                    {% endif %}
                 </div>
             </form>
         </div>

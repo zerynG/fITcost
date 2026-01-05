@@ -22,9 +22,15 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="resources-tab" href="{% url 'projects:manage_resources' project.pk %}">
+                    {% if workspace_id and project_id %}
+                    <a class="nav-link" id="resources-tab" href="{% url 'projects:manage_resources' workspace_id project_id %}">
                         Управление ресурсами
                     </a>
+                    {% else %}
+                    <a class="nav-link" id="resources-tab" href="{% url 'projects:manage_resources_legacy' project.pk %}">
+                        Управление ресурсами
+                    </a>
+                    {% endif %}
                 </li>
             </ul>
             

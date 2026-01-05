@@ -73,7 +73,7 @@
                     <small class="text-muted px-3">Инструменты проекта</small>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if 'projects' in request.path and '/projects/' in request.path %}active{% endif %}" href="{% url 'projects:manage_resources' project_id %}">
+                    <a class="nav-link {% if 'projects' in request.path and '/projects/' in request.path %}active{% endif %}" href="{% url 'projects:manage_resources' workspace_id project_id %}">
                         <i class="fas fa-project-diagram me-2"></i>
                         Управление проектом
                     </a>

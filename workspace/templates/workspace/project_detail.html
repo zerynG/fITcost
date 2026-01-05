@@ -58,7 +58,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="list-group">
-                            <a href="{% url 'projects:manage_resources' project.id %}" class="list-group-item list-group-item-action">
+                            <a href="{% url 'projects:manage_resources' workspace.id project.id %}" class="list-group-item list-group-item-action">
                                 <i class="fas fa-project-diagram me-2"></i> Управление проектом
                             </a>
                             <a href="{% url 'commercial_proposal:proposal_list_project' workspace.id project.id %}" class="list-group-item list-group-item-action">

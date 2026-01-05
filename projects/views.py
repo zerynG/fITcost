@@ -140,9 +140,13 @@ def project_edit(request, pk):
 
 
 @login_required
-def manage_resources(request, project_pk):
+def manage_resources(request, workspace_id=None, project_id=None, project_pk=None):
     """Управление ресурсами проекта - отдельная страница"""
-    from workspace.models import WorkspaceMember
+    from workspace.models import WorkspaceMember, Workspace
+    
+    # Определяем project_id (новая структура имеет приоритет)
+    if project_id is not None:
+        project_pk = project_id
     
     # Ищем проект сначала в workspace, затем в старом projects
     try:
@@ -150,6 +154,16 @@ def manage_resources(request, project_pk):
     except WorkspaceProject.DoesNotExist:
         # Если не найден в workspace, пробуем найти в старом projects
         project = get_object_or_404(Project, pk=project_pk)
+    
+    # Проверка workspace_id (если передан в URL, должен совпадать с проектом)
+    if workspace_id is not None:
+        if hasattr(project, 'workspace') and project.workspace:
+            if project.workspace.id != workspace_id:
+                messages.error(request, "Неверный workspace для проекта")
+                return redirect('projects:project_list')
+        else:
+            messages.error(request, "Проект не принадлежит workspace")
+            return redirect('projects:project_list')
     
     # Проверка доступа: либо проект создан пользователем, либо пользователь имеет доступ к workspace проекта
     has_access = False
@@ -165,58 +179,199 @@ def manage_resources(request, project_pk):
         messages.error(request, "У вас нет доступа к этому проекту")
         return redirect('projects:project_list')
     
+    # Получаем workspace_id и project_id для сайдбара
+    workspace_id = project.workspace.id if hasattr(project, 'workspace') and project.workspace else workspace_id
+    project_id = project.id
+    
+    # Обработка POST запроса для добавления ресурса
+    if request.method == 'POST':
+        from decimal import Decimal
+        from datetime import datetime as dt
+        
+        resource_type = request.POST.get('resource_type')
+        resource_id = request.POST.get('resource_id')
+        service_name = request.POST.get('service_name', '')
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+        quantity = request.POST.get('quantity', '1')
+        margin = request.POST.get('margin', '0')
+        subcontractor_rate = request.POST.get('subcontractor_rate')
+        service_id = request.POST.get('service')
+        
+        if not resource_type or not resource_id:
+            messages.error(request, 'Пожалуйста, выберите тип ресурса и ресурс из списка')
+        elif not start_date or not end_date:
+            messages.error(request, 'Пожалуйста, заполните даты начала и окончания')
+        else:
+            try:
+                # Получаем выбранный ресурс
+                employee = None
+                contractor = None
+                subcontractor = None
+                equipment = None
+                resource_name = ''
+                
+                if resource_type == 'employee':
+                    from employees.models import Employee
+                    employee = Employee.objects.get(pk=resource_id, is_active=True)
+                    resource_name = employee.get_full_name()
+                    if not service_name:
+                        service_name = f"Услуга {employee.get_full_name()}"
+                elif resource_type == 'contractor':
+                    from contractors.models import Contractor
+                    contractor = Contractor.objects.get(pk=resource_id)
+                    resource_name = str(contractor)
+                    if not service_name:
+                        service_name = f"Услуга {contractor}"
+                elif resource_type == 'subcontractor':
+                    from subcontractors.models import Subcontractor
+                    subcontractor = Subcontractor.objects.get(pk=resource_id, is_active=True)
+                    resource_name = subcontractor.name
+                    if not service_name:
+                        service_name = f"Услуга {subcontractor.name}"
+                elif resource_type == 'equipment':
+                    from equipment.models import Equipment
+                    equipment = Equipment.objects.get(pk=resource_id, is_active=True)
+                    resource_name = equipment.name
+                    if not service_name:
+                        service_name = f"Услуга {equipment.name}"
+                
+                # Получаем услугу для исполнителя
+                service = None
+                if resource_type == 'contractor' and service_id:
+                    from contractors.models import Service
+                    try:
+                        service = Service.objects.get(pk=service_id)
+                    except Service.DoesNotExist:
+                        pass
+                
+                # Преобразуем даты
+                start_date_obj = dt.strptime(start_date, '%Y-%m-%d').date() if start_date else None
+                end_date_obj = dt.strptime(end_date, '%Y-%m-%d').date() if end_date else None
+                
+                # Создаем ресурс проекта
+                if isinstance(project, WorkspaceProject):
+                    workspace_resource = WorkspaceProjectResource(
+                        project=project,
+                        name=resource_name,
+                        resource_type=resource_type,
+                        employee=employee,
+                        contractor=contractor,
+                        subcontractor=subcontractor,
+                        equipment=equipment,
+                        service=service,
+                        service_name=service_name,
+                        start_date=start_date_obj,
+                        end_date=end_date_obj,
+                        quantity=Decimal(quantity) if quantity else Decimal('1'),
+                        margin=Decimal(margin) if margin else Decimal('0'),
+                        subcontractor_rate=Decimal(subcontractor_rate) if subcontractor_rate else None,
+                    )
+                    workspace_resource.calculate_costs()
+                    workspace_resource.save()
+                else:
+                    resource = ProjectResource(
+                        project=project,
+                        name=resource_name,
+                        resource_type=resource_type,
+                        employee=employee,
+                        contractor=contractor,
+                        subcontractor=subcontractor,
+                        equipment=equipment,
+                        service=service,
+                        service_name=service_name,
+                        start_date=start_date_obj,
+                        end_date=end_date_obj,
+                        quantity=Decimal(quantity) if quantity else Decimal('1'),
+                        margin=Decimal(margin) if margin else Decimal('0'),
+                        subcontractor_rate=Decimal(subcontractor_rate) if subcontractor_rate else None,
+                    )
+                    resource.calculate_costs()
+                    resource.save()
+                
+                project.calculate_costs()
+                messages.success(request, 'Ресурс успешно добавлен в проект!')
+                # Редирект на эту же страницу
+                if workspace_id and project_id:
+                    return redirect('projects:manage_resources', workspace_id=workspace_id, project_id=project_id)
+                else:
+                    return redirect('projects:manage_resources_legacy', project_pk=project.pk)
+            except Exception as e:
+                import traceback
+                messages.error(request, f'Ошибка при добавлении ресурса: {str(e)}')
+    
     # Получаем ресурсы в зависимости от типа проекта
     if isinstance(project, WorkspaceProject):
         resources = WorkspaceProjectResource.objects.filter(project=project)
     else:
         resources = project.projectresource_set.all()
     
-    # Получаем все ресурсы из реестров (ограничиваем проектом/воркспейсом)
+    # Получаем все ресурсы из реестров для выбора (ограничиваем проектом/воркспейсом)
     from employees.models import Employee
     from contractors.models import Contractor
     from subcontractors.models import Subcontractor
     from equipment.models import Equipment
+    from customers.models import Customer
     
     ws = project.workspace if hasattr(project, 'workspace') and project.workspace else None
 
-    employees = Employee.objects.filter(
+    # Ресурсы для выбора (используются в форме добавления)
+    available_employees = Employee.objects.filter(
         Q(project=project) | Q(can_be_shared=True, project__workspace=ws),
         is_active=True
     ).distinct()
 
-    contractors = Contractor.objects.filter(
+    available_contractors = Contractor.objects.filter(
         Q(project=project) | Q(can_be_shared=True, project__workspace=ws)
     ).distinct()
 
-    subcontractors = Subcontractor.objects.filter(
+    available_subcontractors = Subcontractor.objects.filter(
         Q(project=project) | Q(can_be_shared=True, project__workspace=ws),
         is_active=True
     ).distinct()
 
-    equipment_list = Equipment.objects.filter(
+    available_equipment = Equipment.objects.filter(
         Q(project=project) | Q(can_be_shared=True, project__workspace=ws),
         is_active=True
     ).distinct()
+    
+    # Получаем связанные сущности проекта
+    customer = project.customer if hasattr(project, 'customer') else None
+    commercial_proposal = project.commercial_proposal if hasattr(project, 'commercial_proposal') else None
+    nma_cost = project.nma_cost if hasattr(project, 'nma_cost') else None
 
-    # Получаем workspace_id и project_id для сайдбара
-    workspace_id = project.workspace.id if hasattr(project, 'workspace') and project.workspace else None
-    project_id = project.id
-
+    # Подготавливаем данные для статистики
+    stats = {
+        'total_resources': resources.count(),
+        'employees_count': resources.filter(resource_type='employee').count(),
+        'contractors_count': resources.filter(resource_type='contractor').count(),
+        'subcontractors_count': resources.filter(resource_type='subcontractor').count(),
+        'equipment_count': resources.filter(resource_type='equipment').count(),
+    }
+    
     return render(request, 'projects/manage_resources.html', {
         'project': project,
         'resources': resources,
-        'employees': employees,
-        'contractors': contractors,
-        'subcontractors': subcontractors,
-        'equipment_list': equipment_list,
+        'available_employees': available_employees,
+        'available_contractors': available_contractors,
+        'available_subcontractors': available_subcontractors,
+        'available_equipment': available_equipment,
+        'customer': customer,
+        'commercial_proposal': commercial_proposal,
+        'nma_cost': nma_cost,
+        'stats': stats,
         'workspace_id': workspace_id,
         'project_id': project_id,
     })
 
 
 @login_required
-def add_resource(request, project_pk):
+def add_resource(request, workspace_id=None, project_id=None, project_pk=None):
     from workspace.models import WorkspaceMember
+    
+    # Определяем project_id (новая структура имеет приоритет)
+    if project_id is not None:
+        project_pk = project_id
     
     # Ищем проект сначала в workspace, затем в старом projects
     try:
@@ -224,6 +379,16 @@ def add_resource(request, project_pk):
     except WorkspaceProject.DoesNotExist:
         # Если не найден в workspace, пробуем найти в старом projects
         project = get_object_or_404(Project, pk=project_pk)
+    
+    # Проверка workspace_id (если передан в URL, должен совпадать с проектом)
+    if workspace_id is not None:
+        if hasattr(project, 'workspace') and project.workspace:
+            if project.workspace.id != workspace_id:
+                messages.error(request, "Неверный workspace для проекта")
+                return redirect('projects:project_list')
+        else:
+            messages.error(request, "Проект не принадлежит workspace")
+            return redirect('projects:project_list')
     
     # Проверка доступа: либо проект создан пользователем, либо пользователь имеет доступ к workspace проекта
     has_access = False
@@ -250,6 +415,10 @@ def add_resource(request, project_pk):
     contractors = Contractor.objects.all()
     subcontractors = Subcontractor.objects.filter(is_active=True)
     equipment_list = Equipment.objects.filter(is_active=True)
+    
+    # Получаем workspace_id и project_id для сайдбара и ссылок
+    workspace_id = project.workspace.id if hasattr(project, 'workspace') and project.workspace else workspace_id
+    project_id = project.id
     
     # Получаем режим работы: 'existing' (добавить существующий) или 'new' (создать новый)
     mode = request.GET.get('mode', 'existing')
@@ -292,6 +461,8 @@ def add_resource(request, project_pk):
                         'contractor_form': ContractorForm(prefix='contractor'),
                         'subcontractor_form': SubcontractorForm(prefix='subcontractor'),
                         'equipment_form': EquipmentForm(prefix='equipment'),
+                        'workspace_id': workspace_id,
+                        'project_id': project_id,
                     }
                     return render(request, 'projects/add_resource.html', context)
             
@@ -314,6 +485,8 @@ def add_resource(request, project_pk):
                         'contractor_form': contractor_form,
                         'subcontractor_form': SubcontractorForm(prefix='subcontractor'),
                         'equipment_form': EquipmentForm(prefix='equipment'),
+                        'workspace_id': workspace_id,
+                        'project_id': project_id,
                     }
                     return render(request, 'projects/add_resource.html', context)
             
@@ -336,6 +509,8 @@ def add_resource(request, project_pk):
                         'contractor_form': ContractorForm(prefix='contractor'),
                         'subcontractor_form': subcontractor_form,
                         'equipment_form': EquipmentForm(prefix='equipment'),
+                        'workspace_id': workspace_id,
+                        'project_id': project_id,
                     }
                     return render(request, 'projects/add_resource.html', context)
             
@@ -358,6 +533,8 @@ def add_resource(request, project_pk):
                         'contractor_form': ContractorForm(prefix='contractor'),
                         'subcontractor_form': SubcontractorForm(prefix='subcontractor'),
                         'equipment_form': equipment_form,
+                        'workspace_id': workspace_id,
+                        'project_id': project_id,
                     }
                     return render(request, 'projects/add_resource.html', context)
         
@@ -397,9 +574,15 @@ def add_resource(request, project_pk):
                 
                 # Если нужно добавить еще один ресурс
                 if request.POST.get('add_another') == 'on':
-                    return redirect('projects:add_resource', project_pk=project.pk)
+                    if workspace_id and project_id:
+                        return redirect('projects:add_resource', workspace_id=workspace_id, project_id=project.id)
+                    else:
+                        return redirect('projects:add_resource', project_pk=project.pk)
                 else:
-                    return redirect('projects:manage_resources', project_pk=project.pk)
+                    if workspace_id and project_id:
+                        return redirect('projects:manage_resources', workspace_id=workspace_id, project_id=project.id)
+                    else:
+                        return redirect('projects:manage_resources', project_pk=project.pk)
             else:
                 # Если форма невалидна, возвращаем с ошибками
                 context = {
@@ -419,6 +602,8 @@ def add_resource(request, project_pk):
                     'contractor_form': ContractorForm(prefix='contractor'),
                     'subcontractor_form': SubcontractorForm(prefix='subcontractor'),
                     'equipment_form': EquipmentForm(prefix='equipment'),
+                    'workspace_id': workspace_id,
+                    'project_id': project_id,
                 }
                 return render(request, 'projects/add_resource.html', context)
     else:
@@ -468,6 +653,11 @@ def add_resource(request, project_pk):
             if initial_data:
                 form = ProjectResourceForm(initial=initial_data)
 
+    # Получаем workspace_id и project_id для сайдбара и ссылок
+    workspace_id = project.workspace.id if hasattr(project, 'workspace') and project.workspace else workspace_id
+    project_id = project.id
+
+    # workspace_id и project_id уже определены выше
     context = {
         'project': project,
         'mode': mode,
@@ -485,6 +675,8 @@ def add_resource(request, project_pk):
         'contractor_form': ContractorForm(prefix='contractor'),
         'subcontractor_form': SubcontractorForm(prefix='subcontractor'),
         'equipment_form': EquipmentForm(prefix='equipment'),
+        'workspace_id': workspace_id,
+        'project_id': project_id,
     }
     return render(request, 'projects/add_resource.html', context)
 
@@ -512,7 +704,12 @@ def edit_resource(request, resource_pk):
     
     if not has_access:
         messages.error(request, 'У вас нет прав для редактирования этого ресурса!')
-        return redirect('projects:project_detail', pk=project.pk)
+        workspace_id = project.workspace.id if hasattr(project, 'workspace') and project.workspace else None
+        if workspace_id:
+            from django.urls import reverse
+            return redirect(reverse('workspace:project_detail', args=[workspace_id, project.id]))
+        else:
+            return redirect('projects:project_detail', pk=project.pk)
 
     if request.method == 'POST':
         form = ProjectResourceForm(request.POST, instance=resource)
@@ -522,14 +719,25 @@ def edit_resource(request, resource_pk):
             resource.save()
             project.calculate_costs()
             messages.success(request, 'Ресурс успешно обновлен!')
-            return redirect('projects:project_detail', pk=project.pk)
+            workspace_id = project.workspace.id if hasattr(project, 'workspace') and project.workspace else None
+            if workspace_id:
+                from django.urls import reverse
+                return redirect(reverse('workspace:project_detail', args=[workspace_id, project.id]))
+            else:
+                return redirect('projects:project_detail', pk=project.pk)
     else:
         form = ProjectResourceForm(instance=resource)
+
+    # Получаем workspace_id и project_id для сайдбара и ссылок
+    workspace_id = project.workspace.id if hasattr(project, 'workspace') and project.workspace else None
+    project_id = project.id
 
     return render(request, 'projects/edit_resource.html', {
         'project': project,
         'resource': resource,
-        'form': form
+        'form': form,
+        'workspace_id': workspace_id,
+        'project_id': project_id,
     })
 
 
@@ -586,6 +794,68 @@ def get_resource_data(request, resource_type, resource_id):
 
 
 @login_required
+@require_http_methods(["GET"])
+def get_resources_by_type(request, workspace_id, project_id, resource_type):
+    """API endpoint для получения списка ресурсов по типу для проекта"""
+    from workspace.models import WorkspaceMember, Project as WorkspaceProject
+    
+    try:
+        project = WorkspaceProject.objects.get(pk=project_id, workspace_id=workspace_id)
+        
+        # Проверка доступа
+        has_access = False
+        if hasattr(project, 'created_by') and project.created_by == request.user:
+            has_access = True
+        elif hasattr(project, 'workspace') and project.workspace:
+            has_access = WorkspaceMember.objects.filter(
+                workspace=project.workspace,
+                user=request.user
+            ).exists()
+        
+        if not has_access:
+            return JsonResponse({'error': 'Access denied'}, status=403)
+        
+        ws = project.workspace if hasattr(project, 'workspace') and project.workspace else None
+        resources = []
+        
+        if resource_type == 'employee':
+            from employees.models import Employee
+            resources_qs = Employee.objects.filter(
+                Q(project=project) | Q(can_be_shared=True, project__workspace=ws),
+                is_active=True
+            ).distinct()
+            resources = [{'id': r.id, 'name': r.get_full_name(), 'type': 'employee'} for r in resources_qs]
+        elif resource_type == 'contractor':
+            from contractors.models import Contractor
+            resources_qs = Contractor.objects.filter(
+                Q(project=project) | Q(can_be_shared=True, project__workspace=ws)
+            ).distinct()
+            resources = [{'id': r.id, 'name': str(r), 'type': 'contractor'} for r in resources_qs]
+        elif resource_type == 'subcontractor':
+            from subcontractors.models import Subcontractor
+            resources_qs = Subcontractor.objects.filter(
+                Q(project=project) | Q(can_be_shared=True, project__workspace=ws),
+                is_active=True
+            ).distinct()
+            resources = [{'id': r.id, 'name': r.name, 'type': 'subcontractor'} for r in resources_qs]
+        elif resource_type == 'equipment':
+            from equipment.models import Equipment
+            resources_qs = Equipment.objects.filter(
+                Q(project=project) | Q(can_be_shared=True, project__workspace=ws),
+                is_active=True
+            ).distinct()
+            resources = [{'id': r.id, 'name': r.name, 'type': 'equipment'} for r in resources_qs]
+        else:
+            return JsonResponse({'error': 'Invalid resource type'}, status=400)
+        
+        return JsonResponse({'resources': resources})
+    except WorkspaceProject.DoesNotExist:
+        return JsonResponse({'error': 'Project not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+
+@login_required
 def delete_resource(request, resource_pk):
     from workspace.models import WorkspaceMember
     
@@ -608,12 +878,23 @@ def delete_resource(request, resource_pk):
     
     if not has_access:
         messages.error(request, 'У вас нет прав для удаления этого ресурса!')
-        return redirect('projects:project_detail', pk=project.pk)
+        workspace_id = project.workspace.id if hasattr(project, 'workspace') and project.workspace else None
+        if workspace_id:
+            from django.urls import reverse
+            return redirect(reverse('workspace:project_detail', args=[workspace_id, project.id]))
+        else:
+            return redirect('projects:project_detail', pk=project.pk)
 
     resource.delete()
     project.calculate_costs()
     messages.success(request, 'Ресурс успешно удален!')
-    return redirect('projects:manage_resources', project_pk=project.pk)
+    
+    # Получаем workspace_id для редиректа
+    workspace_id = project.workspace.id if hasattr(project, 'workspace') and project.workspace else None
+    if workspace_id:
+        return redirect('projects:manage_resources', workspace_id=workspace_id, project_id=project.id)
+    else:
+        return redirect('projects:manage_resources', project_pk=project.pk)
 
 
 @login_required

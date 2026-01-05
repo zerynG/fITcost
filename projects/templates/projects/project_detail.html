@@ -25,9 +25,15 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="resources-tab" href="{% url 'projects:manage_resources' project.pk %}">
+                    {% if workspace_id and project_id %}
+                    <a class="nav-link" id="resources-tab" href="{% url 'projects:manage_resources' workspace_id project_id %}">
                         Управление ресурсами
                     </a>
+                    {% else %}
+                    <a class="nav-link" id="resources-tab" href="{% url 'projects:manage_resources_legacy' project.pk %}">
+                        Управление ресурсами
+                    </a>
+                    {% endif %}
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="calculations-tab" data-toggle="tab" href="#calculations" role="tab">
@@ -149,9 +155,15 @@
                 <div class="tab-pane fade" id="resources" role="tabpanel">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4>Ресурсы проекта</h4>
-                        <a href="{% url 'projects:manage_resources' project.pk %}" class="btn btn-success">
+                        {% if workspace_id and project_id %}
+                        <a href="{% url 'projects:manage_resources' workspace_id project_id %}" class="btn btn-success">
                             <i class="fas fa-cog"></i> Управление ресурсами
                         </a>
+                        {% else %}
+                        <a href="{% url 'projects:manage_resources_legacy' project.pk %}" class="btn btn-success">
+                            <i class="fas fa-cog"></i> Управление ресурсами
+                        </a>
+                        {% endif %}
                     </div>
                     
                     <div class="table-responsive">
