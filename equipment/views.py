@@ -112,7 +112,7 @@ class EquipmentDeleteView(DeleteView):
         equipment.save()
         messages.success(request, 'Оборудование успешно удалено')
         if project_id and workspace_id:
-            return redirect('equipment:list_project', workspace_id=workspace_id, project_id=project_id)
+            return redirect('workspace:project_detail', workspace_id=workspace_id, project_id=project_id)
         return redirect(self.success_url)
 
     def get_context_data(self, **kwargs):

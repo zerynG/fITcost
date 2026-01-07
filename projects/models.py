@@ -55,7 +55,7 @@ class Project(models.Model):
         - Себестоимость: сумма себестоимостей всех ресурсов
         - Стоимость с маржинальностью: сумма итоговых стоимостей всех ресурсов (если выбран заказчик)
         - Чистая прибыль: сумма (итоговая стоимость - себестоимость) для каждого ресурса
-        - Итоговая стоимость: isp = sp + (sp*ns), где sp - стоимость с маржинальностью, ns - налоговая ставка
+        - Итоговая стоимость проекта: простая сумма итоговых стоимостей всех ресурсов (без налога и других переменных)
         """
         resources = self.projectresource_set.all()
 
@@ -75,13 +75,8 @@ class Project(models.Model):
             for resource in resources
         )
 
-        # Расчет итоговой стоимости с налогом: isp = sp + (sp*ns)
-        # где isp - итоговая стоимость проекта, sp - стоимость с маржинальностью, ns - налоговая ставка
-        if self.cost_with_margin > 0:
-            tax_amount = self.cost_with_margin * (self.tax_rate / Decimal('100'))
-            self.total_cost = self.cost_with_margin + tax_amount
-        else:
-            self.total_cost = Decimal('0')
+        # Итоговая стоимость проекта: простая сумма итоговых стоимостей всех ресурсов (без налога и других переменных)
+        self.total_cost = sum(Decimal(str(resource.final_cost)) for resource in resources)
 
         self.save()
 
@@ -151,7 +146,7 @@ class ProjectResource(models.Model):
             # Упрощенный расчет: используем среднее количество рабочих дней в месяце (22)
             working_days_per_month = 22
             daily_rate = self.employee.calculate_daily_rate(working_days_per_month)
-            
+
             # Рассчитываем количество дней в интервале
             days_count = (self.end_date - self.start_date).days + 1
             # calculate_daily_rate теперь возвращает Decimal, не нужно преобразовывать

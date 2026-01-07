@@ -76,22 +76,56 @@
                                            class="btn btn-sm btn-warning" title="Редактировать">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <a href="{% url 'customers:customer_delete_project' workspace_id project_id customer.pk %}" 
-                                           class="btn btn-sm btn-danger" title="Удалить"
-                                           onclick="return confirm('Вы уверены, что хотите удалить этого заказчика?')">
+                                        <button type="button" class="btn btn-sm btn-danger"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#deleteModal{{ customer.pk }}"
+                                                title="Удалить">
                                             <i class="fas fa-trash"></i>
-                                        </a>
+                                        </button>
                                     {% else %}
                                         <a href="{% url 'customers:customer_edit' customer.pk %}" 
                                            class="btn btn-sm btn-warning" title="Редактировать">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <a href="{% url 'customers:customer_delete' customer.pk %}" 
-                                           class="btn btn-sm btn-danger" title="Удалить"
-                                           onclick="return confirm('Вы уверены, что хотите удалить этого заказчика?')">
+                                        <button type="button" class="btn btn-sm btn-danger"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#deleteModal{{ customer.pk }}"
+                                                title="Удалить">
                                             <i class="fas fa-trash"></i>
-                                        </a>
+                                        </button>
                                     {% endif %}
+
+                                    <!-- Модальное окно подтверждения удаления -->
+                                    <div class="modal fade" id="deleteModal{{ customer.pk }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Подтверждение удаления</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Вы уверены, что хотите удалить заказчика
+                                                       <strong>{% if customer.customer_type == 'individual' %}{{ customer.full_name }}{% else %}{{ customer.name }}{% endif %}</strong>?</p>
+                                                    <p class="text-danger">Это действие нельзя отменить.</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                            data-bs-dismiss="modal">Отмена</button>
+                                                    {% if project_id and workspace_id %}
+                                                        <form method="post" action="{% url 'customers:customer_delete_project' workspace_id project_id customer.pk %}" style="display:inline;">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-danger">Удалить</button>
+                                                        </form>
+                                                    {% else %}
+                                                        <form method="post" action="{% url 'customers:customer_delete' customer.pk %}" style="display:inline;">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-danger">Удалить</button>
+                                                        </form>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                             {% empty %}

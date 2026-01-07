@@ -3,7 +3,7 @@
 {% block main_content %}
 <div class="container mt-4">
     <h2>Удаление коммерческого предложения</h2>
-    <p>Вы уверены, что хотите удалить коммерческое предложение <strong>"{{ proposal.title }}"</strong> для заказчика <strong>{{ proposal.customer.name }}</strong>?</p>
+    <p>Вы уверены, что хотите удалить коммерческое предложение <strong>"{{ proposal.title }}"</strong>{% if proposal.customer %} для заказчика <strong>{{ proposal.customer.name }}</strong>{% endif %}?</p>
 
     <form method="post">
         {% csrf_token %}

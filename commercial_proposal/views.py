@@ -222,7 +222,7 @@ def download_excel(request, pk):
     # Заголовок
     ws['A1'] = proposal.title
     ws['A2'] = f"Дата формирования: {proposal.creation_date}"
-    ws['A3'] = f"Заказчик: {proposal.customer.name}"
+    ws['A3'] = f"Заказчик: {proposal.customer.name if proposal.customer else 'Не указан'}"
 
     # Услуги
     ws['A5'] = "Услуги"
@@ -254,7 +254,7 @@ def download_word(request, pk):
     doc = Document()
     doc.add_heading(proposal.title, 0)
     doc.add_paragraph(f"Дата формирования: {proposal.creation_date}")
-    doc.add_paragraph(f"Заказчик: {proposal.customer.name}")
+    doc.add_paragraph(f"Заказчик: {proposal.customer.name if proposal.customer else 'Не указан'}")
 
     doc.add_heading('Техническое задание', level=1)
     doc.add_paragraph(proposal.technical_spec)

@@ -134,6 +134,19 @@ def employee_toggle_active(request, pk):
     action = "активирован" if employee.is_active else "деактивирован"
     messages.success(request, f'Сотрудник {employee.get_full_name()} {action}!')
 
+    # Получаем workspace_id и project_id из POST параметров или GET параметров
+    workspace_id = request.POST.get('workspace_id') or request.GET.get('workspace_id')
+    project_id = request.POST.get('project_id') or request.GET.get('project_id')
+    
+    # Если не передан, пытаемся получить из объекта employee
+    if not project_id and employee.project:
+        project_id = employee.project.id
+        if employee.project.workspace:
+            workspace_id = employee.project.workspace.id
+    
+    # Редирект на правильную страницу в зависимости от наличия project_id и workspace_id
+    if project_id and workspace_id:
+        return redirect('employees:employee_list_project', workspace_id=workspace_id, project_id=project_id)
     return redirect('employees:employee_list')
 
 

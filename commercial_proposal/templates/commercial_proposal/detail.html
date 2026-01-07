@@ -15,7 +15,7 @@
     <div class="card mb-4">
         <div class="card-body">
             <p><strong>Дата формирования:</strong> {{ proposal.creation_date }}</p>
-            <p><strong>Заказчик:</strong> {{ proposal.customer.name }}</p>
+            <p><strong>Заказчик:</strong> {% if proposal.customer %}{{ proposal.customer.name }}{% else %}Не указан{% endif %}</p>
             <p><strong>Руководитель:</strong> {{ proposal.manager_position }} {{ proposal.manager_name }}</p>
             <p><strong>Техническое задание:</strong> {{ proposal.technical_spec }}</p>
             <p><strong>Общая стоимость:</strong> {{ proposal.total_cost }} руб.</p>

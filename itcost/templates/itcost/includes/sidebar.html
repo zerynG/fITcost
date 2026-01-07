@@ -1,18 +1,16 @@
 {% load static %}
 <!-- Боковая панель навигации -->
-<div class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+<div class="col-md-3 col-lg-2 d-md-block bg-light sidebar" id="main-sidebar">
     <div class="position-sticky pt-3">
+        <!-- Кнопка сворачивания -->
+        <button id="sidebar-toggle-btn" class="btn btn-sm btn-link position-absolute" style="top: 10px; right: 5px; z-index: 10; padding: 2px 5px; color: #6c757d;" aria-label="Свернуть/развернуть сайдбар">
+            <i class="fas fa-chevron-left"></i>
+        </button>
         <div class="sidebar-logo text-center mb-4">
             <h6 class="text-muted">IQNIX DEV</h6>
         </div>
 
         <ul class="nav flex-column">
-            <li class="nav-item mb-3">
-                <button id="theme-toggle-btn" class="nav-link w-100 text-start" type="button" style="border: none; background: none; cursor: pointer; padding: 0.75rem 1rem;">
-                    <i class="fas fa-moon me-2"></i>
-                    <span id="theme-toggle-text">Темная тема</span>
-                </button>
-            </li>
             <li class="nav-item">
                 <a class="nav-link {% if request.path == '/home/' %}active{% endif %}" href="/home/">
                     <i class="fas fa-home me-2"></i>
@@ -116,6 +114,12 @@
     .sidebar {
         min-height: calc(100vh - 56px);
         box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+        transition: width 0.3s ease, min-width 0.3s ease;
+    }
+
+    .sidebar.sidebar-collapsed {
+        width: 60px !important;
+        min-width: 60px !important;
     }
 
     .nav-link {
@@ -123,6 +127,8 @@
         padding: 0.75rem 1rem;
         border-left: 3px solid transparent;
         transition: all 0.2s;
+        display: flex;
+        align-items: center;
     }
 
     .nav-link:hover {
@@ -143,6 +149,10 @@
         padding-bottom: 1rem;
     }
 
+    .sidebar.sidebar-collapsed .sidebar-logo {
+        display: none;
+    }
+
     .nav-item {
         margin-bottom: 0.25rem;
     }
@@ -150,18 +160,16 @@
     .nav-link i {
         width: 20px;
         text-align: center;
+        flex-shrink: 0;
     }
 
-    #theme-toggle-btn {
-        transition: all 0.2s;
+    .sidebar.sidebar-collapsed .nav-link {
+        justify-content: center;
+        padding: 0.75rem 0.5rem;
     }
 
-    #theme-toggle-btn:hover {
-        background-color: #f8f9fa !important;
-    }
-
-    [data-theme="dark"] #theme-toggle-btn:hover {
-        background-color: #3a3a3a !important;
+    #sidebar-toggle-btn {
+        transition: left 0.3s ease;
     }
 </style>
 

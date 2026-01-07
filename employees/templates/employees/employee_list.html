@@ -96,6 +96,10 @@
                                 <form method="post" action="{% url 'employees:employee_toggle_active' employee.pk %}"
                                       class="d-inline">
                                     {% csrf_token %}
+                                    {% if project_id and workspace_id %}
+                                        <input type="hidden" name="workspace_id" value="{{ workspace_id }}">
+                                        <input type="hidden" name="project_id" value="{{ project_id }}">
+                                    {% endif %}
                                     <button type="submit" class="btn btn-sm btn-secondary"
                                             title="{% if employee.is_active %}Деактивировать{% else %}Активировать{% endif %}">
                                         <i class="fas fa-{% if employee.is_active %}toggle-on{% else %}toggle-off{% endif %}"></i>

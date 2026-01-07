@@ -21,7 +21,7 @@
 
     <div class="section">
         <h3>Заказчик:</h3>
-        <p>{{ proposal.customer.name }}</p>
+        <p>{% if proposal.customer %}{{ proposal.customer.name }}{% else %}Не указан{% endif %}</p>
         <p>{{ proposal.manager_position }}: {{ proposal.manager_name }}</p>
         <p>Email: {{ proposal.manager_email }}</p>
     </div>

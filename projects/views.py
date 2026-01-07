@@ -123,6 +123,11 @@ def project_edit(request, pk):
             form.save()
             project.calculate_costs()
             messages.success(request, 'Проект успешно обновлен!')
+            # Получаем workspace_id и project_id для редиректа
+            workspace_id = project.workspace.id if hasattr(project, 'workspace') and project.workspace else None
+            project_id = project.id
+            if workspace_id and project_id:
+                return redirect('projects:manage_resources', workspace_id=workspace_id, project_id=project_id)
             return redirect('projects:project_detail', pk=project.pk)
     else:
         form = ProjectForm(instance=project)
@@ -300,6 +305,11 @@ def manage_resources(request, workspace_id=None, project_id=None, project_pk=Non
                 import traceback
                 messages.error(request, f'Ошибка при добавлении ресурса: {str(e)}')
     
+    # Пересчитываем стоимость проекта перед отображением
+    project.calculate_costs()
+    # Перезагружаем проект из БД чтобы получить обновленные значения
+    project.refresh_from_db()
+    
     # Получаем ресурсы в зависимости от типа проекта
     if isinstance(project, WorkspaceProject):
         resources = WorkspaceProjectResource.objects.filter(project=project)
@@ -315,29 +325,42 @@ def manage_resources(request, workspace_id=None, project_id=None, project_pk=Non
     
     ws = project.workspace if hasattr(project, 'workspace') and project.workspace else None
 
-    # Ресурсы для выбора (используются в форме добавления)
+    # Получаем уже добавленные ресурсы проекта для исключения
+    if isinstance(project, WorkspaceProject):
+        added_employees = WorkspaceProjectResource.objects.filter(project=project, employee__isnull=False).values_list('employee_id', flat=True)
+        added_contractors = WorkspaceProjectResource.objects.filter(project=project, contractor__isnull=False).values_list('contractor_id', flat=True)
+        added_subcontractors = WorkspaceProjectResource.objects.filter(project=project, subcontractor__isnull=False).values_list('subcontractor_id', flat=True)
+        added_equipment = WorkspaceProjectResource.objects.filter(project=project, equipment__isnull=False).values_list('equipment_id', flat=True)
+    else:
+        added_employees = ProjectResource.objects.filter(project=project, employee__isnull=False).values_list('employee_id', flat=True)
+        added_contractors = ProjectResource.objects.filter(project=project, contractor__isnull=False).values_list('contractor_id', flat=True)
+        added_subcontractors = ProjectResource.objects.filter(project=project, subcontractor__isnull=False).values_list('subcontractor_id', flat=True)
+        added_equipment = ProjectResource.objects.filter(project=project, equipment__isnull=False).values_list('equipment_id', flat=True)
+    
+    # Ресурсы для выбора (используются в форме добавления) - исключаем уже добавленные
     available_employees = Employee.objects.filter(
         Q(project=project) | Q(can_be_shared=True, project__workspace=ws),
         is_active=True
-    ).distinct()
+    ).exclude(id__in=added_employees).distinct()
 
     available_contractors = Contractor.objects.filter(
         Q(project=project) | Q(can_be_shared=True, project__workspace=ws)
-    ).distinct()
+    ).exclude(id__in=added_contractors).distinct()
 
     available_subcontractors = Subcontractor.objects.filter(
         Q(project=project) | Q(can_be_shared=True, project__workspace=ws),
         is_active=True
-    ).distinct()
+    ).exclude(id__in=added_subcontractors).distinct()
 
     available_equipment = Equipment.objects.filter(
         Q(project=project) | Q(can_be_shared=True, project__workspace=ws),
         is_active=True
-    ).distinct()
+    ).exclude(id__in=added_equipment).distinct()
     
     # Получаем связанные сущности проекта
     customer = project.customer if hasattr(project, 'customer') else None
     commercial_proposal = project.commercial_proposal if hasattr(project, 'commercial_proposal') else None
+    # Получаем первую НМА стоимость (если есть несколько)
     nma_cost = project.nma_cost if hasattr(project, 'nma_cost') else None
 
     # Подготавливаем данные для статистики
@@ -720,9 +743,9 @@ def edit_resource(request, resource_pk):
             project.calculate_costs()
             messages.success(request, 'Ресурс успешно обновлен!')
             workspace_id = project.workspace.id if hasattr(project, 'workspace') and project.workspace else None
-            if workspace_id:
-                from django.urls import reverse
-                return redirect(reverse('workspace:project_detail', args=[workspace_id, project.id]))
+            project_id = project.id
+            if workspace_id and project_id:
+                return redirect('projects:manage_resources', workspace_id=workspace_id, project_id=project_id)
             else:
                 return redirect('projects:project_detail', pk=project.pk)
     else:

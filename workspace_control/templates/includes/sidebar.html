@@ -7,12 +7,6 @@
         </div>
 
         <ul class="nav flex-column">
-            <li class="nav-item mb-3">
-                <button id="theme-toggle-btn" class="nav-link w-100 text-start" type="button" style="border: none; background: none; cursor: pointer; padding: 0.75rem 1rem;">
-                    <i class="fas fa-moon me-2"></i>
-                    <span id="theme-toggle-text">Темная тема</span>
-                </button>
-            </li>
             <li class="nav-item">
                 <a class="nav-link {% if request.path == '/home/' %}active{% endif %}" href="/home/">
                     <i class="fas fa-home me-2"></i>
@@ -134,17 +128,5 @@
     .nav-link i {
         width: 20px;
         text-align: center;
-    }
-
-    #theme-toggle-btn {
-        transition: all 0.2s;
-    }
-
-    #theme-toggle-btn:hover {
-        background-color: #f8f9fa !important;
-    }
-
-    [data-theme="dark"] #theme-toggle-btn:hover {
-        background-color: #3a3a3a !important;
     }
 </style>

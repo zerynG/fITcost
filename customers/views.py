@@ -107,8 +107,14 @@ class CustomerDeleteView(DeleteView):
                 workspace_id = customer.project.workspace.id
         
         super().delete(request, *args, **kwargs)
+        # Если project_id и workspace_id не переданы, но есть у customer, используем их
+        if not project_id and customer.project:
+            project_id = customer.project.id
+            if customer.project.workspace:
+                workspace_id = customer.project.workspace.id
+        
         if project_id and workspace_id:
-            return redirect('customers:customer_list_project', workspace_id=workspace_id, project_id=project_id)
+            return redirect('workspace:project_detail', workspace_id=workspace_id, project_id=project_id)
         return redirect(self.success_url)
     
     def get_context_data(self, **kwargs):

@@ -13,7 +13,7 @@ class CommercialProposal(models.Model):
         verbose_name='Проект'
     )
     title = models.CharField(max_length=200, verbose_name="Название документа")
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, verbose_name="Заказчик")
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Заказчик")
     creation_date = models.DateField(auto_now_add=True, verbose_name="Дата формирования")
     technical_spec = models.TextField(verbose_name="Техническое задание")
     total_cost = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Итоговая стоимость")
@@ -26,7 +26,7 @@ class CommercialProposal(models.Model):
         verbose_name_plural = "Коммерческие предложения"
 
     def __str__(self):
-        return f"{self.title} - {self.customer.name}"
+        return f"{self.title} - {self.customer.name if self.customer else 'Не указан'}"
 
 
 class ServiceItem(models.Model):

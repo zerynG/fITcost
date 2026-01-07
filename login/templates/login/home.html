@@ -71,6 +71,53 @@
             flex-direction: column;
             position: relative;
             line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        /* Фоновый логотип */
+        .background-logo {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 800px;
+            opacity: 0.08;
+            z-index: 0;
+            pointer-events: none;
+            filter: blur(2px);
+            animation: subtlePulse 8s ease-in-out infinite;
+        }
+
+        @keyframes subtlePulse {
+            0%, 100% {
+                opacity: 0.08;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                opacity: 0.12;
+                transform: translate(-50%, -50%) scale(1.05);
+            }
+        }
+
+        .background-logo svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Геометрический паттерн фона */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(135deg, rgba(157, 149, 255, 0.03) 0%, transparent 50%),
+                linear-gradient(225deg, rgba(157, 149, 255, 0.02) 0%, transparent 50%);
+            z-index: 0;
+            pointer-events: none;
         }
 
         /* Header стили */
@@ -230,6 +277,8 @@
             padding: 0 20px;
             width: 100%;
             flex: 1;
+            position: relative;
+            z-index: 1;
         }
 
         /* Welcome секция */
@@ -703,6 +752,86 @@
     </style>
 </head>
 <body>
+    <!-- Фоновый логотип -->
+    <div class="background-logo">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <!-- Градиенты для верхних сегментов (розово-фиолетовые) -->
+                <linearGradient id="gradient-top1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#EC9EF9;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#D87FE8;stop-opacity:0.9" />
+                </linearGradient>
+                <linearGradient id="gradient-top2" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#D87FE8;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#B794F6;stop-opacity:0.9" />
+                </linearGradient>
+                <linearGradient id="gradient-top3" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#B794F6;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#9D95FF;stop-opacity:0.9" />
+                </linearGradient>
+                <!-- Градиенты для нижних сегментов (темно-фиолетовые) -->
+                <linearGradient id="gradient-bottom1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#9D95FF;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#8B7FE8;stop-opacity:0.9" />
+                </linearGradient>
+                <linearGradient id="gradient-bottom2" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#8B7FE8;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:0.9" />
+                </linearGradient>
+                <linearGradient id="gradient-bottom3" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#7C3AED;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#6D28D9;stop-opacity:0.9" />
+                </linearGradient>
+                <!-- Эффект свечения -->
+                <filter id="glow">
+                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                    <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+            
+            <!-- Сегменты верхней части (розово-фиолетовые) -->
+            <!-- Верхний левый L-образный сегмент -->
+            <path d="M 30 30 L 85 30 L 85 50 L 110 50 L 110 85 L 50 85 L 50 65 L 30 65 Z" 
+                  fill="url(#gradient-top1)" 
+                  filter="url(#glow)"
+                  opacity="0.85"/>
+            
+            <!-- Верхний центральный сегмент -->
+            <path d="M 85 30 L 140 30 L 140 65 L 120 65 L 120 85 L 110 85 L 110 50 L 85 50 Z" 
+                  fill="url(#gradient-top2)" 
+                  filter="url(#glow)"
+                  opacity="0.85"/>
+            
+            <!-- Верхний правый сегмент -->
+            <path d="M 140 30 L 170 30 L 170 85 L 140 85 L 140 65 L 160 65 L 160 50 L 140 50 Z" 
+                  fill="url(#gradient-top3)" 
+                  filter="url(#glow)"
+                  opacity="0.85"/>
+            
+            <!-- Сегменты нижней части (темно-фиолетовые) -->
+            <!-- Нижний левый сегмент -->
+            <path d="M 30 115 L 50 115 L 50 135 L 70 135 L 70 170 L 30 170 Z" 
+                  fill="url(#gradient-bottom1)" 
+                  filter="url(#glow)"
+                  opacity="0.85"/>
+            
+            <!-- Нижний центральный сегмент -->
+            <path d="M 70 135 L 130 135 L 130 170 L 70 170 Z" 
+                  fill="url(#gradient-bottom2)" 
+                  filter="url(#glow)"
+                  opacity="0.85"/>
+            
+            <!-- Нижний правый L-образный сегмент -->
+            <path d="M 130 115 L 150 115 L 150 135 L 130 135 L 130 155 L 170 155 L 170 170 L 130 170 Z" 
+                  fill="url(#gradient-bottom3)" 
+                  filter="url(#glow)"
+                  opacity="0.85"/>
+        </svg>
+    </div>
+
     <div class="header">
         <div class="logo-container">
             <div class="logo">IT</div>

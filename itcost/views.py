@@ -500,8 +500,18 @@ class OrganizationSettingsUpdateView(LoginRequiredMixin, UpdateView):
         )
         return settings_obj
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['workspace_id'] = self.kwargs.get('workspace_id') or self.request.GET.get('workspace_id')
+        context['project_id'] = self.kwargs.get('project_id') or self.request.GET.get('project_id')
+        return context
+
     def form_valid(self, form):
         messages.success(self.request, "Настройки организации обновлены.")
+        workspace_id = self.kwargs.get('workspace_id') or self.request.GET.get('workspace_id')
+        project_id = self.kwargs.get('project_id') or self.request.GET.get('project_id')
+        if workspace_id and project_id:
+            return redirect('itcost:dashboard_project', workspace_id=workspace_id, project_id=project_id)
         return super().form_valid(form)
 
 
@@ -564,7 +574,25 @@ class CostCalculationDeleteView(LoginRequiredMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         calculation = self.get_object()
         project_name = calculation.project_name
+        
+        # Получаем project_id и workspace_id из URL kwargs, GET параметров или из объекта
+        project_id = kwargs.get("project_id") or request.GET.get("project_id")
+        workspace_id = kwargs.get("workspace_id") or request.GET.get("workspace_id")
+        
+        # Если не передан, пытаемся получить из объекта
+        if not project_id:
+            if calculation.nma_cost and calculation.nma_cost.project:
+                project_id = calculation.nma_cost.project_id
+                workspace_id = workspace_id or getattr(calculation.nma_cost.project, "workspace_id", None)
+            elif calculation.commercial_proposal and calculation.commercial_proposal.project:
+                project_id = calculation.commercial_proposal.project_id
+                workspace_id = workspace_id or getattr(calculation.commercial_proposal.project, "workspace_id", None)
+        
         calculation.delete()
         messages.success(request, f'Расчет стоимости "{project_name}" успешно удален!')
+        
+        # Редирект на правильную страницу в зависимости от наличия project_id и workspace_id
+        if project_id and workspace_id:
+            return redirect("itcost:dashboard_project", workspace_id=workspace_id, project_id=project_id)
         return redirect("itcost:dashboard")
 

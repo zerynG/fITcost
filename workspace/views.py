@@ -172,6 +172,11 @@ def project_detail(request, workspace_id, project_id):
         messages.error(request, "У вас нет доступа к этому проекту")
         return redirect('workspace:workspace_dashboard', workspace_id=workspace_id)
 
+    # Обновляем стоимость проекта перед отображением
+    project.calculate_costs()
+    # Перезагружаем проект из БД чтобы получить обновленные значения
+    project.refresh_from_db()
+
     context = {
         'workspace': workspace,
         'project': project,

@@ -43,7 +43,7 @@
                 {% for proposal in proposals %}
                 <tr>
                     <td>{{ proposal.title }}</td>
-                    <td>{{ proposal.customer.name }}</td>
+                    <td>{% if proposal.customer %}{{ proposal.customer.name }}{% else %}Не указан{% endif %}</td>
                     <td>{{ proposal.creation_date }}</td>
                     <td>{{ proposal.total_cost }} руб.</td>
                     <td>

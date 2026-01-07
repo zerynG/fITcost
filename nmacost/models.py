@@ -3,10 +3,10 @@ from django.contrib.auth.models import User
 
 
 class NMACost(models.Model):
-    project = models.OneToOneField(
+    project = models.ForeignKey(
         'workspace.Project',
         on_delete=models.CASCADE,
-        related_name='nma_cost_entry',
+        related_name='nma_cost_entries',
         null=True,
         blank=True,
         verbose_name='Проект'
