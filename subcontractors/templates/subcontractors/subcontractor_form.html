@@ -49,7 +49,7 @@
         <div class="col-md-4">
             <label for="{{ form.kpp.id_for_label }}" class="form-label">{{ form.kpp.label }}</label>
             {{ form.kpp }}
-            <small class="form-text text-muted">Только для юридических лиц</small>
+            <small class="form-text text-muted">Указывается только для юридических лиц (необязательно)</small>
             {% if form.kpp.errors %}
                 <div class="invalid-feedback d-block">{{ form.kpp.errors }}</div>
             {% endif %}

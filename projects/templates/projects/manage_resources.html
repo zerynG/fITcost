@@ -23,7 +23,7 @@
         <div class="col-lg-4 col-xl-3">
             <!-- Форма добавления ресурса -->
             <div class="card shadow-sm mb-4">
-                <div class="card-header bg-white border-bottom">
+                <div class="card-header border-bottom">
                     <h5 class="card-title mb-0">
                         <i class="fas fa-plus-circle text-primary me-2"></i>Добавить ресурс в проект
                     </h5>
@@ -134,7 +134,7 @@
 
             <!-- Статистика проекта -->
             <div class="card shadow-sm">
-                <div class="card-header bg-white border-bottom">
+                <div class="card-header border-bottom">
                     <h5 class="card-title mb-0">
                         <i class="fas fa-chart-pie text-primary me-2"></i>Статистика проекта
                     </h5>
@@ -142,33 +142,33 @@
                 <div class="card-body">
                     <div class="row g-3 mb-3">
                         <div class="col-6">
-                            <div class="text-center p-3 bg-light rounded">
-                                <div class="h4 mb-1">{{ stats.total_resources }}</div>
-                                <div class="small text-muted">Всего ресурсов</div>
+                            <div class="text-center p-3 rounded" style="background: var(--bg_light_alt, #232222);">
+                                <div class="h4 mb-1" style="color: var(--text, #ffffff);">{{ stats.total_resources }}</div>
+                                <div class="small" style="color: var(--muted, #888888);">Всего ресурсов</div>
                             </div>
                         </div>
                         <div class="col-6">
-                            <div class="text-center p-3 bg-light rounded">
-                                <div class="h4 mb-1">{{ stats.employees_count }}</div>
-                                <div class="small text-muted">Сотрудники</div>
+                            <div class="text-center p-3 rounded" style="background: var(--bg_light_alt, #232222);">
+                                <div class="h4 mb-1" style="color: var(--text, #ffffff);">{{ stats.employees_count }}</div>
+                                <div class="small" style="color: var(--muted, #888888);">Сотрудники</div>
                             </div>
                         </div>
                         <div class="col-6">
-                            <div class="text-center p-3 bg-light rounded">
-                                <div class="h4 mb-1">{{ stats.contractors_count }}</div>
-                                <div class="small text-muted">Исполнители</div>
+                            <div class="text-center p-3 rounded" style="background: var(--bg_light_alt, #232222);">
+                                <div class="h4 mb-1" style="color: var(--text, #ffffff);">{{ stats.contractors_count }}</div>
+                                <div class="small" style="color: var(--muted, #888888);">Исполнители</div>
                             </div>
                         </div>
                         <div class="col-6">
-                            <div class="text-center p-3 bg-light rounded">
-                                <div class="h4 mb-1">{{ stats.equipment_count }}</div>
-                                <div class="small text-muted">Оборудование</div>
+                            <div class="text-center p-3 rounded" style="background: var(--bg_light_alt, #232222);">
+                                <div class="h4 mb-1" style="color: var(--text, #ffffff);">{{ stats.equipment_count }}</div>
+                                <div class="small" style="color: var(--muted, #888888);">Оборудование</div>
                             </div>
                         </div>
                         <div class="col-6">
-                            <div class="text-center p-3 bg-light rounded">
-                                <div class="h4 mb-1">{{ stats.subcontractors_count }}</div>
-                                <div class="small text-muted">Субподрядчики</div>
+                            <div class="text-center p-3 rounded" style="background: var(--bg_light_alt, #232222);">
+                                <div class="h4 mb-1" style="color: var(--text, #ffffff);">{{ stats.subcontractors_count }}</div>
+                                <div class="small" style="color: var(--muted, #888888);">Субподрядчики</div>
                             </div>
                         </div>
                     </div>
@@ -183,7 +183,7 @@
         <!-- Правая колонка: Список ресурсов -->
         <div class="col-lg-8 col-xl-9">
             <div class="card shadow-sm">
-                <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                <div class="card-header border-bottom d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">
                         <i class="fas fa-boxes text-primary me-2"></i>Ресурсы проекта
                     </h5>
@@ -204,7 +204,7 @@
                         {% for resource in resources %}
                         <div class="col-md-6 col-xl-4 resource-card" data-type="{{ resource.resource_type }}">
                             <div class="card h-100 shadow-sm">
-                                <div class="card-header bg-light">
+                                <div class="card-header" style="background: var(--bg_light_alt, #232222);">
                                     <div class="d-flex align-items-center">
                                         <div class="bg-primary text-white rounded p-2 me-2">
                                             {% if resource.resource_type == 'employee' %}
@@ -218,29 +218,29 @@
                                             {% endif %}
                                         </div>
                                         <div class="flex-grow-1">
-                                            <h6 class="mb-0">{{ resource.name }}</h6>
-                                            <small class="text-muted">{{ resource.get_resource_type_display }}</small>
+                                            <h6 class="mb-0" style="color: var(--text, #ffffff);">{{ resource.name }}</h6>
+                                            <small style="color: var(--muted, #888888);">{{ resource.get_resource_type_display }}</small>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="card-body">
-                                    <div class="small mb-2">
+                                    <div class="small mb-2" style="color: var(--text, #ffffff);">
                                         <strong>Исполнитель:</strong> {{ resource.get_executor_display }}
                                     </div>
-                                    <div class="small mb-2">
+                                    <div class="small mb-2" style="color: var(--text, #ffffff);">
                                         <strong>Услуга:</strong> {{ resource.service_name }}
                                     </div>
-                                    <div class="small mb-2">
+                                    <div class="small mb-2" style="color: var(--text, #ffffff);">
                                         <strong>Период:</strong> {{ resource.start_date|date:"d.m.Y" }} - {{ resource.end_date|date:"d.m.Y" }}
                                     </div>
-                                    <div class="small mb-2">
+                                    <div class="small mb-2" style="color: var(--text, #ffffff);">
                                         <strong>Себестоимость:</strong> {{ resource.cost_price|floatformat:2 }} ₽
                                     </div>
-                                    <div class="small mb-2">
+                                    <div class="small mb-2" style="color: var(--text, #ffffff);">
                                         <strong>Итоговая стоимость:</strong> <strong>{{ resource.final_cost|floatformat:2 }} ₽</strong>
                                     </div>
                                 </div>
-                                <div class="card-footer bg-white border-top">
+                                <div class="card-footer border-top" style="background: var(--bg_light_alt, #232222);">
                                     <div class="btn-group w-100" role="group">
                                         <a href="{% url 'projects:edit_resource' resource.pk %}" class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-eye me-1"></i>Подробнее
@@ -273,17 +273,17 @@
 
 <style>
 .type-option:hover {
-    border-color: #0d6efd !important;
+    border-color: var(--accent, #9D95FF) !important;
     transform: translateY(-2px);
 }
 .type-option.active {
-    border-color: #0d6efd !important;
-    background-color: #f0f9ff !important;
+    border-color: var(--accent, #9D95FF) !important;
+    background-color: var(--transparentize_accent_80, rgba(157, 149, 255, 0.2)) !important;
 }
 .filter-btn.active {
-    background-color: #0d6efd;
-    color: white;
-    border-color: #0d6efd;
+    background-color: var(--accent, #9D95FF) !important;
+    color: var(--bg, #1B1A1A) !important;
+    border-color: var(--accent, #9D95FF) !important;
 }
 .resource-card {
     transition: all 0.3s;

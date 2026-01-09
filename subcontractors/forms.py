@@ -75,9 +75,44 @@ class SubcontractorForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Делаем КПП необязательным при создании
-        if not self.instance.pk:
-            self.fields['kpp'].required = False
+        # Делаем КПП необязательным всегда
+        self.fields['kpp'].required = False
+        # Убираем все валидаторы из модели, так как валидация происходит в clean_kpp()
+        self.fields['kpp'].validators = []
+
+    def clean_kpp(self):
+        kpp = self.cleaned_data.get('kpp')
+        
+        # Если КПП пустой, возвращаем None (валидация формата не требуется)
+        if not kpp or not kpp.strip():
+            return None
+        
+        # Если КПП заполнен, проверяем формат (9 цифр)
+        kpp = kpp.strip()
+        if not kpp.isdigit():
+            raise forms.ValidationError('КПП должен содержать только цифры')
+        if len(kpp) != 9:
+            raise forms.ValidationError('КПП должен содержать 9 цифр')
+        
+        return kpp
+
+    def clean(self):
+        cleaned_data = super().clean()
+        contractor_type = cleaned_data.get('contractor_type')
+        kpp = cleaned_data.get('kpp')
+        
+        # Проверка: если выбран ИП, КПП должен быть пустым
+        if contractor_type == 'individual':
+            if kpp and kpp.strip():
+                # Удаляем предыдущие ошибки для КПП, если они были
+                if 'kpp' in self._errors:
+                    del self._errors['kpp']
+                self.add_error('kpp', 'КПП указывается только для юридических лиц')
+            # Очищаем КПП для ИП
+            cleaned_data['kpp'] = None
+        # Если выбрано юридическое лицо, КПП может быть заполнен или пустым - никаких ограничений
+        
+        return cleaned_data
 
 
 class SubcontractorFilterForm(forms.Form):

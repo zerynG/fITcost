@@ -51,7 +51,6 @@
         <div class="col-md-4" id="operational-cost-group">
             <label for="{{ form.operational_cost.id_for_label }}" class="form-label">{{ form.operational_cost.label }}</label>
             {{ form.operational_cost }}
-            <small class="form-text text-muted">Только для арендованного оборудования</small>
             {% if form.operational_cost.errors %}
                 <div class="invalid-feedback d-block">{{ form.operational_cost.errors }}</div>
             {% endif %}
@@ -80,18 +79,8 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    function toggleOperationalCost() {
-        var acquisitionType = document.getElementById('id_acquisition_type').value;
-        var operationalCostGroup = document.getElementById('operational-cost-group');
-        if (acquisitionType === 'rent') {
-            operationalCostGroup.style.display = 'block';
-        } else {
-            operationalCostGroup.style.display = 'none';
-        }
-    }
-    
-    document.getElementById('id_acquisition_type').addEventListener('change', toggleOperationalCost);
-    toggleOperationalCost();
+    // Поле эксплуатационной стоимости теперь всегда доступно
+    // Ограничения по типу приобретения убраны
 });
 </script>
 {% endblock %}

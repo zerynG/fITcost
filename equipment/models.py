@@ -62,16 +62,8 @@ class Equipment(models.Model):
         return self.name
 
     def clean(self):
-        from django.core.exceptions import ValidationError
-        if self.acquisition_type == 'rent' and not self.operational_cost:
-            raise ValidationError({
-                'operational_cost': 'Для арендованного оборудования необходимо указать эксплуатационную стоимость'
-            })
-        if self.acquisition_type == 'rent' and self.operational_cost is not None and self.service_cost_per_unit is not None:
-            if self.operational_cost < self.service_cost_per_unit:
-                raise ValidationError({
-                    'service_cost_per_unit': 'Стоимость услуг не может быть ниже эксплуатационной стоимости для арендованного оборудования'
-                })
+        # Ограничения по эксплуатационной стоимости и стоимости услуг за единицу убраны
+        pass
 
     def calculate_service_cost(self, quantity):
         """Расчет стоимости услуг"""

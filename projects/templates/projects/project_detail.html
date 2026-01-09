@@ -50,14 +50,14 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label><strong>Название проекта:</strong></label>
-                                        <p class="form-control-plaintext">{{ project.name }}</p>
+                                        <label style="color: var(--text, #ffffff);"><strong>Название проекта:</strong></label>
+                                        <p class="form-control-plaintext" style="color: var(--text, #ffffff);">{{ project.name }}</p>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label><strong>Заказчик:</strong></label>
-                                        <p class="form-control-plaintext">
+                                        <label style="color: var(--text, #ffffff);"><strong>Заказчик:</strong></label>
+                                        <p class="form-control-plaintext" style="color: var(--text, #ffffff);">
                                             {% if project.customer %}
                                                 {{ project.customer }}
                                             {% else %}
@@ -71,21 +71,21 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label><strong>Дата начала:</strong></label>
-                                        <p class="form-control-plaintext">{{ project.start_date|date:"d.m.Y" }}</p>
+                                        <label style="color: var(--text, #ffffff);"><strong>Дата начала:</strong></label>
+                                        <p class="form-control-plaintext" style="color: var(--text, #ffffff);">{{ project.start_date|date:"d.m.Y" }}</p>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label><strong>Дата окончания:</strong></label>
-                                        <p class="form-control-plaintext">{{ project.end_date|date:"d.m.Y" }}</p>
+                                        <label style="color: var(--text, #ffffff);"><strong>Дата окончания:</strong></label>
+                                        <p class="form-control-plaintext" style="color: var(--text, #ffffff);">{{ project.end_date|date:"d.m.Y" }}</p>
                                     </div>
                                 </div>
                             </div>
                             
                             <div class="form-group">
-                                <label><strong>Описание проекта:</strong></label>
-                                <p class="form-control-plaintext">
+                                <label style="color: var(--text, #ffffff);"><strong>Описание проекта:</strong></label>
+                                <p class="form-control-plaintext" style="color: var(--text, #ffffff);">
                                     {% if project.description %}
                                         {{ project.description|linebreaks }}
                                     {% else %}
@@ -97,10 +97,10 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label><strong>Техническое задание:</strong></label>
-                                        <p class="form-control-plaintext">
+                                        <label style="color: var(--text, #ffffff);"><strong>Техническое задание:</strong></label>
+                                        <p class="form-control-plaintext" style="color: var(--text, #ffffff);">
                                             {% if project.technical_spec %}
-                                                <a href="{{ project.technical_spec.url }}" target="_blank">
+                                                <a href="{{ project.technical_spec.url }}" target="_blank" style="color: var(--accent, #9D95FF);">
                                                     <i class="fas fa-file"></i> {{ project.technical_spec.name }}
                                                 </a>
                                             {% else %}
@@ -111,8 +111,8 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label><strong>Налоговая ставка:</strong></label>
-                                        <p class="form-control-plaintext">{{ project.tax_rate }}%</p>
+                                        <label style="color: var(--text, #ffffff);"><strong>Налоговая ставка:</strong></label>
+                                        <p class="form-control-plaintext" style="color: var(--text, #ffffff);">{{ project.tax_rate }}%</p>
                                     </div>
                                 </div>
                             </div>
@@ -120,10 +120,10 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label><strong>Расчет НМА:</strong></label>
-                                        <p class="form-control-plaintext">
+                                        <label style="color: var(--text, #ffffff);"><strong>Расчет НМА:</strong></label>
+                                        <p class="form-control-plaintext" style="color: var(--text, #ffffff);">
                                             {% if project.nma_cost %}
-                                                <a href="{% url 'admin:nmacost_nmacost_change' project.nma_cost.pk %}" target="_blank">
+                                                <a href="{% url 'admin:nmacost_nmacost_change' project.nma_cost.pk %}" target="_blank" style="color: var(--accent, #9D95FF);">
                                                     {{ project.nma_cost }}
                                                 </a>
                                             {% else %}
@@ -134,10 +134,10 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label><strong>Коммерческое предложение:</strong></label>
-                                        <p class="form-control-plaintext">
+                                        <label style="color: var(--text, #ffffff);"><strong>Коммерческое предложение:</strong></label>
+                                        <p class="form-control-plaintext" style="color: var(--text, #ffffff);">
                                             {% if project.commercial_proposal %}
-                                                <a href="{% url 'admin:commercial_proposal_commercialproposal_change' project.commercial_proposal.pk %}" target="_blank">
+                                                <a href="{% url 'admin:commercial_proposal_commercialproposal_change' project.commercial_proposal.pk %}" target="_blank" style="color: var(--accent, #9D95FF);">
                                                     {{ project.commercial_proposal }}
                                                 </a>
                                             {% else %}
@@ -223,29 +223,29 @@
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-header">
-                                    <h5>Финансовые показатели</h5>
+                                    <h5 style="color: var(--text, #ffffff);">Финансовые показатели</h5>
                                 </div>
                                 <div class="card-body">
                                     <table class="table">
                                         <tr>
-                                            <th>Себестоимость проекта:</th>
-                                            <td>{{ project.cost_price|floatformat:2 }} руб.</td>
+                                            <th style="color: var(--text, #ffffff);">Себестоимость проекта:</th>
+                                            <td style="color: var(--text, #ffffff);">{{ project.cost_price|floatformat:2 }} руб.</td>
                                         </tr>
                                         <tr>
-                                            <th>Стоимость с маржинальностью:</th>
-                                            <td>{{ project.cost_with_margin|floatformat:2 }} руб.</td>
+                                            <th style="color: var(--text, #ffffff);">Стоимость с маржинальностью:</th>
+                                            <td style="color: var(--text, #ffffff);">{{ project.cost_with_margin|floatformat:2 }} руб.</td>
                                         </tr>
                                         <tr>
-                                            <th>Чистая прибыль:</th>
-                                            <td>{{ project.net_profit|floatformat:2 }} руб.</td>
+                                            <th style="color: var(--text, #ffffff);">Чистая прибыль:</th>
+                                            <td style="color: var(--text, #ffffff);">{{ project.net_profit|floatformat:2 }} руб.</td>
                                         </tr>
                                         <tr>
-                                            <th>Налоговая ставка:</th>
-                                            <td>{{ project.tax_rate }}%</td>
+                                            <th style="color: var(--text, #ffffff);">Налоговая ставка:</th>
+                                            <td style="color: var(--text, #ffffff);">{{ project.tax_rate }}%</td>
                                         </tr>
-                                        <tr class="table-primary">
-                                            <th><strong>Итоговая стоимость проекта:</strong></th>
-                                            <td><strong>{{ project.total_cost|floatformat:2 }} руб.</strong></td>
+                                        <tr style="background: var(--transparentize_accent_80, rgba(157, 149, 255, 0.2));">
+                                            <th style="color: var(--text, #ffffff);"><strong>Итоговая стоимость проекта:</strong></th>
+                                            <td style="color: var(--text, #ffffff);"><strong>{{ project.total_cost|floatformat:2 }} руб.</strong></td>
                                         </tr>
                                     </table>
                                 </div>
@@ -255,7 +255,7 @@
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-header">
-                                    <h5>Документы</h5>
+                                    <h5 style="color: var(--text, #ffffff);">Документы</h5>
                                 </div>
                                 <div class="card-body">
                                     <div class="mb-3">

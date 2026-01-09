@@ -1,18 +1,25 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link href="{% static 'css/sidebar.css' %}" rel="stylesheet">
+{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <!-- Включаем боковую панель -->
-        {% include 'workspace/includes/sidebar.html' %}
+<div class="container-fluid" style="display: flex; padding: 0;">
+    <!-- Включаем боковую панель -->
+    {% include 'workspace/includes/sidebar.html' %}
 
-        <!-- Основное содержимое -->
-        <div class="col-md-9 col-lg-10 ms-sm-auto px-4 py-4">
-            {% block main_content %}
-            <!-- Здесь будет основное содержимое страницы -->
-            {% endblock %}
-        </div>
-    </div>
+    <!-- Основное содержимое -->
+    <main class="main-content" id="main-content" style="flex: 1; min-height: 100vh; background: var(--bg, #1B1A1A); padding: 20px;">
+        {% block main_content %}
+        <!-- Здесь будет основное содержимое страницы -->
+        {% endblock %}
+    </main>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/sidebar.js' %}"></script>
 {% endblock %}
 

@@ -53,17 +53,6 @@ class EquipmentForm(forms.ModelForm):
         }
 
     def clean(self):
+        # Ограничения по эксплуатационной стоимости и стоимости услуг за единицу убраны
         cleaned_data = super().clean()
-        acquisition_type = cleaned_data.get('acquisition_type')
-        operational_cost = cleaned_data.get('operational_cost')
-        service_cost = cleaned_data.get('service_cost_per_unit')
-
-        if acquisition_type == 'rent':
-            if not operational_cost:
-                self.add_error('operational_cost',
-                               'Для арендованного оборудования необходимо указать эксплуатационную стоимость')
-            elif service_cost and operational_cost > service_cost:
-                self.add_error('service_cost_per_unit',
-                               'Стоимость услуг не может быть ниже эксплуатационной стоимости для арендованного оборудования')
-
         return cleaned_data

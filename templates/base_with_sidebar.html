@@ -1,145 +1,25 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <!-- Включаем боковую панель -->
-        {% include 'workspace/includes/sidebar.html' %}
+{% block extra_css %}
+<link href="{% static 'css/sidebar.css' %}" rel="stylesheet">
+{% endblock %}
 
-        <!-- Основное содержимое -->
-        <div class="col-md-9 col-lg-10 ms-sm-auto px-4 py-4" id="main-content">
-            {% block main_content %}
-            <!-- Здесь будет основное содержимое страницы -->
-            {% endblock %}
-        </div>
-    </div>
+{% block content %}
+<div class="container-fluid" style="display: flex; padding: 0;">
+    <!-- Включаем боковую панель -->
+    {% include 'workspace/includes/sidebar.html' %}
+
+    <!-- Основное содержимое -->
+    <main class="main-content" id="main-content" style="flex: 1; min-height: 100vh; background: var(--bg, #1B1A1A);">
+        {% block main_content %}
+        <!-- Здесь будет основное содержимое страницы -->
+        {% endblock %}
+    </main>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const sidebar = document.querySelector('#main-sidebar');
-    const mainContent = document.getElementById('main-content');
-    const sidebarToggle = document.getElementById('sidebar-toggle-btn');
-    
-    if (sidebarToggle && sidebar) {
-        // Проверяем сохраненное состояние
-        const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-        
-        function collapseSidebar() {
-            sidebar.classList.add('sidebar-collapsed');
-            // Скрываем текст внутри ссылок, но оставляем иконки
-            const navLinks = sidebar.querySelectorAll('.nav-link');
-            navLinks.forEach(link => {
-                const icon = link.querySelector('i');
-                const textSpans = link.querySelectorAll('span');
-                textSpans.forEach(span => {
-                    span.style.display = 'none';
-                });
-                // Если есть текст после иконки (не в span), оборачиваем его
-                const childNodes = Array.from(link.childNodes);
-                childNodes.forEach(node => {
-                    if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
-                        const wrapper = document.createElement('span');
-                        wrapper.className = 'nav-link-text';
-                        wrapper.textContent = node.textContent;
-                        node.replaceWith(wrapper);
-                        wrapper.style.display = 'none';
-                    }
-                });
-            });
-            // Скрываем заголовки разделов
-            const smallTexts = sidebar.querySelectorAll('small.text-muted');
-            smallTexts.forEach(el => el.style.display = 'none');
-            // Скрываем логотип
-            const logo = sidebar.querySelector('.sidebar-logo');
-            if (logo) logo.style.display = 'none';
-            // Скрываем hr и разделители
-            const hrElements = sidebar.querySelectorAll('hr');
-            hrElements.forEach(hr => hr.style.display = 'none');
-            // Центрируем иконки
-            navLinks.forEach(link => {
-                link.style.justifyContent = 'center';
-                link.style.padding = '0.75rem 0.5rem';
-            });
-            // Скрываем текст в кнопке темы
-            const themeText = sidebar.querySelector('#theme-toggle-text');
-            if (themeText) themeText.style.display = 'none';
-            // Уменьшаем ширину сайдбара
-            sidebar.style.width = '60px';
-            sidebar.style.minWidth = '60px';
-            if (mainContent) {
-                mainContent.classList.remove('col-md-9', 'col-lg-10');
-                mainContent.classList.add('col-md-11', 'col-lg-11');
-                mainContent.style.marginLeft = '60px';
-            }
-            if (sidebarToggle) {
-                sidebarToggle.innerHTML = '<i class="fas fa-chevron-right"></i>';
-                sidebarToggle.style.right = '5px';
-                sidebarToggle.style.left = 'auto';
-            }
-            localStorage.setItem('sidebarCollapsed', 'true');
-        }
-        
-        function expandSidebar() {
-            sidebar.classList.remove('sidebar-collapsed');
-            // Показываем текст
-            const textSpans = sidebar.querySelectorAll('.nav-link span, .nav-link-text');
-            textSpans.forEach(span => span.style.display = '');
-            // Показываем заголовки разделов
-            const smallTexts = sidebar.querySelectorAll('small.text-muted');
-            smallTexts.forEach(el => el.style.display = '');
-            // Показываем логотип
-            const logo = sidebar.querySelector('.sidebar-logo');
-            if (logo) logo.style.display = '';
-            // Показываем hr и разделители
-            const hrElements = sidebar.querySelectorAll('hr');
-            hrElements.forEach(hr => hr.style.display = '');
-            // Возвращаем обычное выравнивание
-            const navLinks = sidebar.querySelectorAll('.nav-link');
-            navLinks.forEach(link => {
-                link.style.justifyContent = '';
-                link.style.padding = '';
-            });
-            // Показываем текст в кнопке темы
-            const themeText = sidebar.querySelector('#theme-toggle-text');
-            if (themeText) themeText.style.display = '';
-            // Возвращаем обычную ширину сайдбара
-            sidebar.style.width = '';
-            sidebar.style.minWidth = '';
-            if (mainContent) {
-                mainContent.classList.remove('col-md-11', 'col-lg-11');
-                mainContent.classList.add('col-md-9', 'col-lg-10');
-                mainContent.style.marginLeft = '';
-            }
-            if (sidebarToggle) {
-                sidebarToggle.innerHTML = '<i class="fas fa-chevron-left"></i>';
-                sidebarToggle.style.right = '5px';
-                sidebarToggle.style.left = 'auto';
-            }
-            localStorage.setItem('sidebarCollapsed', 'false');
-        }
-        
-        // Применяем сохраненное состояние
-        if (isCollapsed) {
-            collapseSidebar();
-        }
-        
-        // Обработчик клика на кнопку
-        sidebarToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const isCurrentlyCollapsed = sidebar.classList.contains('sidebar-collapsed');
-            if (isCurrentlyCollapsed) {
-                expandSidebar();
-            } else {
-                collapseSidebar();
-            }
-        });
-    }
-});
-</script>
+<script src="{% static 'js/sidebar.js' %}"></script>
 {% endblock %}
 

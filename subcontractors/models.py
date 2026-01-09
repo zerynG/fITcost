@@ -33,7 +33,7 @@ class Subcontractor(models.Model):
         blank=True,
         null=True,
         verbose_name='КПП',
-        validators=[RegexValidator(r'^\d{9}$', 'КПП должен содержать 9 цифр')]
+        # Валидатор убран, так как валидация происходит в форме
     )
     ogrn = models.CharField(
         max_length=15,

@@ -1,175 +1,241 @@
 {% load static %}
 <!-- Боковая панель навигации -->
-<div class="col-md-3 col-lg-2 d-md-block bg-light sidebar" id="main-sidebar">
-    <div class="position-sticky pt-3">
-        <!-- Кнопка сворачивания -->
-        <button id="sidebar-toggle-btn" class="btn btn-sm btn-link position-absolute" style="top: 10px; right: 5px; z-index: 10; padding: 2px 5px; color: #6c757d;" aria-label="Свернуть/развернуть сайдбар">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-        <div class="sidebar-logo text-center mb-4">
-            <h6 class="text-muted">IQNIX DEV</h6>
+<nav class="sidebar" id="main-sidebar">
+    <!-- Хедер -->
+    <div class="sidebar-header">
+        <div class="logo">
+            <div class="logo-icon">ID</div>
+            <span class="logo-text">IQNIX DEV</span>
         </div>
-
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link {% if request.path == '/home/' %}active{% endif %}" href="/home/">
-                    <i class="fas fa-home me-2"></i>
-                    Главная
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {% if 'workspace' in request.path and 'project' not in request.path %}active{% endif %}" href="{% url 'workspace:workspace_list' %}">
-                    <i class="fas fa-briefcase me-2"></i>
-                    Рабочие области
-                </a>
-            </li>
-            
-            {% comment %} Реестры показываем только внутри проекта {% endcomment %}
-            {% if workspace_id and project_id %}
-                <li class="nav-item mt-3">
-                    <hr>
-                    <small class="text-muted px-3">Реестры проекта</small>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if 'customers' in request.path %}active{% endif %}" href="{% url 'customers:customer_list_project' workspace_id project_id %}">
-                        <i class="fas fa-users me-2"></i>
-                        Реестр заказчиков
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if 'contractors' in request.path %}active{% endif %}" href="{% url 'contractors:contractors_list_project' workspace_id project_id %}">
-                        <i class="fas fa-user-tie me-2"></i>
-                        Реестр исполнителей
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if 'equipment' in request.path %}active{% endif %}" href="{% url 'equipment:list_project' workspace_id project_id %}">
-                        <i class="fas fa-tools me-2"></i>
-                        Реестр оборудования
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if 'employees' in request.path %}active{% endif %}" href="{% url 'employees:employee_list_project' workspace_id project_id %}">
-                        <i class="fas fa-id-badge me-2"></i>
-                        Реестр сотрудников
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if 'subcontractors' in request.path %}active{% endif %}" href="{% url 'subcontractors:list_project' workspace_id project_id %}">
-                        <i class="fas fa-building me-2"></i>
-                        Реестр субподрядчиков
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if 'services' in request.path %}active{% endif %}" href="{% url 'services:service_list_project' workspace_id project_id %}">
-                        <i class="fas fa-concierge-bell me-2"></i>
-                        Реестр услуг
-                    </a>
-                </li>
-                <li class="nav-item mt-3">
-                    <hr>
-                    <small class="text-muted px-3">Инструменты проекта</small>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if 'projects' in request.path and '/projects/' in request.path %}active{% endif %}" href="{% url 'projects:manage_resources' workspace_id project_id %}">
-                        <i class="fas fa-project-diagram me-2"></i>
-                        Управление проектом
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if '/commercial/' in request.path %}active{% endif %}" href="{% url 'commercial_proposal:proposal_list_project' workspace_id project_id %}">
-                        <i class="fas fa-file-contract me-2"></i>
-                        Форма коммерческого предложения
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if '/nma/' in request.path %}active{% endif %}" href="{% url 'nmacost:nmacost-list-project' workspace_id project_id %}">
-                        <i class="fas fa-calculator me-2"></i>
-                        Форма стоимости НМА
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if 'itcost' in request.path %}active{% endif %}" href="{% url 'itcost:dashboard_project' workspace_id project_id %}">
-                        <i class="fas fa-calculator me-2"></i>
-                        Система расчета стоимости
-                    </a>
-                </li>
-            {% endif %}
-            
-            <li class="nav-item mt-3">
-                <hr>
-                <small class="text-muted px-3">Система</small>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {% if 'user_management' in request.path %}active{% endif %}" href="/staff/users/">
-                    <i class="fas fa-user-plus me-2"></i>
-                    Создание пользователей
-                </a>
-            </li>
-        </ul>
+        <button class="toggle-btn" id="sidebar-toggle-btn" aria-label="Свернуть/развернуть сайдбар">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 18l-6-6 6-6"/>
+            </svg>
+        </button>
     </div>
-</div>
+    
+    <!-- Навигация -->
+    <div class="sidebar-nav">
+        <!-- Раздел: Основное -->
+        <div class="nav-section">
+            <div class="section-label">Основное</div>
+            <ul class="nav-items">
+                <li class="nav-item">
+                    <a href="/home/" class="nav-link {% if request.path == '/home/' %}active{% endif %}">
+                        <div class="nav-icon icon-home">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                <polyline points="9 22 9 12 15 12 15 22"/>
+                            </svg>
+                        </div>
+                        <span class="nav-text">Главная</span>
+                        <span class="tooltip">Главная</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'workspace:workspace_list' %}" class="nav-link {% if 'workspace' in request.path and 'project' not in request.path %}active{% endif %}">
+                        <div class="nav-icon icon-workspace">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="3" y1="9" x2="21" y2="9"/>
+                                <line x1="9" y1="21" x2="9" y2="9"/>
+                            </svg>
+                        </div>
+                        <span class="nav-text">Рабочие области</span>
+                        <span class="tooltip">Рабочие области</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        {% comment %} Реестры показываем только внутри проекта {% endcomment %}
+        {% if workspace_id and project_id %}
+        <!-- Раздел: Реестры -->
+        <div class="nav-section">
+            <div class="section-label">Реестры</div>
+            <ul class="nav-items">
+                <li class="nav-item">
+                    <a href="{% url 'customers:customer_list_project' workspace_id project_id %}" class="nav-link {% if 'customers' in request.path %}active{% endif %}">
+                        <div class="nav-icon icon-customer">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
+                        <span class="nav-text">Реестр заказчиков</span>
+                        <span class="tooltip">Реестр заказчиков</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'contractors:contractors_list_project' workspace_id project_id %}" class="nav-link {% if 'contractors' in request.path %}active{% endif %}">
+                        <div class="nav-icon icon-executor">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                        </div>
+                        <span class="nav-text">Реестр исполнителей</span>
+                        <span class="tooltip">Реестр исполнителей</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'equipment:list_project' workspace_id project_id %}" class="nav-link {% if 'equipment' in request.path %}active{% endif %}">
+                        <div class="nav-icon icon-equipment">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                            </svg>
+                        </div>
+                        <span class="nav-text">Реестр оборудования</span>
+                        <span class="tooltip">Реестр оборудования</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'employees:employee_list_project' workspace_id project_id %}" class="nav-link {% if 'employees' in request.path %}active{% endif %}">
+                        <div class="nav-icon icon-employee">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                        </div>
+                        <span class="nav-text">Реестр сотрудников</span>
+                        <span class="tooltip">Реестр сотрудников</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'subcontractors:list_project' workspace_id project_id %}" class="nav-link {% if 'subcontractors' in request.path %}active{% endif %}">
+                        <div class="nav-icon icon-subcontractor">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="8" r="7"/>
+                                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
+                            </svg>
+                        </div>
+                        <span class="nav-text">Реестр субподрядчиков</span>
+                        <span class="tooltip">Реестр субподрядчиков</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'services:service_list_project' workspace_id project_id %}" class="nav-link {% if 'services' in request.path %}active{% endif %}">
+                        <div class="nav-icon icon-service">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="8" x2="12" y2="12"/>
+                                <line x1="12" y1="16" x2="12.01" y2="16"/>
+                            </svg>
+                        </div>
+                        <span class="nav-text">Реестр услуг</span>
+                        <span class="tooltip">Реестр услуг</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Раздел: Проекты и расчеты -->
+        <div class="nav-section">
+            <div class="section-label">Проекты</div>
+            <ul class="nav-items">
+                <li class="nav-item">
+                    <a href="{% url 'projects:manage_resources' workspace_id project_id %}" class="nav-link {% if 'projects' in request.path and '/projects/' in request.path %}active{% endif %}">
+                        <div class="nav-icon icon-project">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                                <polyline points="2 17 12 22 22 17"/>
+                                <polyline points="2 12 12 17 22 12"/>
+                            </svg>
+                        </div>
+                        <span class="nav-text">Управление проектом</span>
+                        <span class="tooltip">Управление проектом</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'commercial_proposal:proposal_list_project' workspace_id project_id %}" class="nav-link {% if '/commercial/' in request.path %}active{% endif %}">
+                        <div class="nav-icon icon-proposal">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <polyline points="10 9 9 9 8 9"/>
+                            </svg>
+                        </div>
+                        <span class="nav-text">Форма коммерческого предложения</span>
+                        <span class="tooltip">Форма коммерческого предложения</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'nmacost:nmacost-list-project' workspace_id project_id %}" class="nav-link {% if '/nma/' in request.path %}active{% endif %}">
+                        <div class="nav-icon icon-nma">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                            </svg>
+                        </div>
+                        <span class="nav-text">Форма стоимости НМА</span>
+                        <span class="tooltip">Форма стоимости НМА</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'itcost:dashboard_project' workspace_id project_id %}" class="nav-link {% if 'itcost' in request.path %}active{% endif %}">
+                        <div class="nav-icon icon-calculation">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+                                <line x1="8" y1="6" x2="16" y2="6"/>
+                                <line x1="16" y1="10" x2="8" y2="10"/>
+                                <line x1="16" y1="14" x2="8" y2="14"/>
+                                <line x1="16" y1="18" x2="8" y2="18"/>
+                            </svg>
+                        </div>
+                        <span class="nav-text">Система расчета стоимости</span>
+                        <span class="tooltip">Система расчета стоимости</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        {% endif %}
+        
+        <!-- Раздел: Администрирование -->
+        <div class="nav-section">
+            <div class="section-label">Администрирование</div>
+            <ul class="nav-items">
+                <li class="nav-item">
+                    <a href="/staff/users/" class="nav-link {% if 'user_management' in request.path %}active{% endif %}">
+                        <div class="nav-icon icon-user">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="8.5" cy="7" r="4"/>
+                                <line x1="20" y1="8" x2="20" y2="14"/>
+                                <line x1="23" y1="11" x2="17" y2="11"/>
+                            </svg>
+                        </div>
+                        <span class="nav-text">Создание пользователей</span>
+                        <span class="tooltip">Создание пользователей</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Футер сайдбара -->
+    <div class="sidebar-footer">
+        <div class="user-avatar">AD</div>
+        <div class="user-info">
+            <div class="user-name">Администратор</div>
+            <div class="user-role">Super Admin</div>
+        </div>
+    </div>
+</nav>
 
-<style>
-    .sidebar {
-        min-height: calc(100vh - 56px);
-        box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-        transition: width 0.3s ease, min-width 0.3s ease;
-    }
+<!-- Оверлей для мобильной версии -->
+<div class="mobile-overlay" id="mobileOverlay"></div>
 
-    .sidebar.sidebar-collapsed {
-        width: 60px !important;
-        min-width: 60px !important;
-    }
-
-    .nav-link {
-        color: #333;
-        padding: 0.75rem 1rem;
-        border-left: 3px solid transparent;
-        transition: all 0.2s;
-        display: flex;
-        align-items: center;
-    }
-
-    .nav-link:hover {
-        background-color: #f8f9fa;
-        border-left: 3px solid #0d6efd;
-        color: #0d6efd;
-    }
-
-    .nav-link.active {
-        font-weight: 600;
-        color: #0d6efd;
-        background-color: #e9ecef;
-        border-left: 3px solid #0d6efd;
-    }
-
-    .sidebar-logo {
-        border-bottom: 1px solid #dee2e6;
-        padding-bottom: 1rem;
-    }
-
-    .sidebar.sidebar-collapsed .sidebar-logo {
-        display: none;
-    }
-
-    .nav-item {
-        margin-bottom: 0.25rem;
-    }
-
-    .nav-link i {
-        width: 20px;
-        text-align: center;
-        flex-shrink: 0;
-    }
-
-    .sidebar.sidebar-collapsed .nav-link {
-        justify-content: center;
-        padding: 0.75rem 0.5rem;
-    }
-
-    #sidebar-toggle-btn {
-        transition: left 0.3s ease;
-    }
-</style>
-
+<!-- Кнопка для мобильной версии -->
+<button class="mobile-toggle" id="mobileToggle" style="display: none;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+</button>
